@@ -17,6 +17,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# compile dirs
+Debug/
+gbemu/Debug
 # =========================
 # Operating System Files
 # =========================
