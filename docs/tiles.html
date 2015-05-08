@@ -1,0 +1,66 @@
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="PurpleFish" CONTENT="GB Info">
+   <META NAME="GENERATOR" CONTENT="Mozilla/4.04 [en] (Win95; I) [Netscape]">
+   <TITLE>Gameboy Tile Format</TITLE>
+</HEAD>
+<BODY>
+
+<H3>
+<U><FONT FACE="Arial,Helvetica"><FONT COLOR="#800080">Gameboy Tile Format</FONT></FONT></U></H3>
+<FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">First thing to
+note about Gameboy tiles are their size. In most cases they are 8x8 squares
+which are easily created using your favorite tile editor. These usually
+throw out the code (in Hex or Decimal) for the tile which can then be pasted
+into your code. You don't have to know their format to use them, but if
+your interested read on.</FONT></FONT>
+<H3>
+<U><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">Hex or Decimal?</FONT></FONT></U></H3>
+<FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">Makes bugger all
+difference which you use, as long as you understand binary and how to convert
+numbers between the two. Use which you prefer, just remember to add 0x
+to the Hex, eg: 0x3C</FONT></FONT>
+<H3>
+<U><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">Binary Flags</FONT></FONT></U></H3>
+<FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">That's what the
+tile format is using, and it uses two per line. If you don't know what
+a flag is read the 'what's a flag' bit below. This means the first line
+of a tile is represented by a pair of numbers like 11,22 and since tiles
+have 8 lines you will have a structure with 16 numbers. The first number
+of the pair represents the colours white (0) and light grey (1), the second
+number shows white (0) and dark grey (1). When a pixel is both light and
+dark grey it becomes black.</FONT></FONT>
+<H3>
+<U><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">Whats a flag?</FONT></FONT></U></H3>
+<FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">A flag is part
+of a binary number. Each bit of the number is a flag, so the binary number
+0101 has four flags. 0101 equals 5 in Decimal. If you set the 4th flag
+(remember to read binary numbers from right to left) the binary number
+becomes 1101 (13 decimal). So by using 8 flags (a binary number like 01010101)
+you can represent which pixels are 'on' for an entire line in a Gameboy
+tile by using one number (in this case 85). But since you can only represent
+2 'colours' using binary, and the Gameboy uses 4 (discounting the misspelt
+Gameboy 'Color') you need to use a pair of binary flags, hence 2 numbers
+to hold the colours of each line. This is shown below.</FONT></FONT><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080"></FONT></FONT>
+
+<P><IMG SRC="tiles.jpg" HEIGHT=105 WIDTH=500><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080"></FONT></FONT>
+
+<P><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">This means
+the start of your tile code would look like...</FONT></FONT>
+<BR><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">unsigned char
+TileExample[] =</FONT></FONT>
+<BR><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">{</FONT></FONT>
+<BR><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">&nbsp; 25,65,
+.....</FONT></FONT>
+<BR><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">}</FONT></FONT><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080"></FONT></FONT>
+
+<P><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">Hopefully you
+now understand Gameboy tiles. Have Fun !!</FONT></FONT><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080"></FONT></FONT>
+
+<P><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">PurpleFish</FONT></FONT>
+<BR><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">PurpleFish@Cheerful.com</FONT></FONT>
+<BR><FONT FACE="Times New Roman,Times"><FONT COLOR="#800080">Live Music
+Site - http://members.tripod.co.uk/PurpleFish/</FONT></FONT>
+</BODY>
+</HTML>

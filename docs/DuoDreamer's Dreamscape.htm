@@ -1,0 +1,376 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0038)http://duo.gbadev.org/dmg/lesson2.html -->
+<HTML><HEAD><TITLE>DuoDreamer's Dreamscape</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=windows-1252">
+<META content="DuoDreamer's Dreamscape" name=title>
+<META 
+content="poetry,poems,midi,mod,mods,midis,gameboy,gb,pokemon,emulate,emulation,emulators,console,computer,mame,raiden,nesticle,rage,callus,nocash,zsnes,snes9x,arcade,classic,video games,roms" 
+name=keywords><!-- -----------Start of CSS Definitions ------------------ --><LINK 
+href="DuoDreamer's Dreamscape_files/color.css" type=text/css rel=stylesheet>
+<STYLE type=text/css></STYLE>
+<!------------------------------- End of CSS Definitions ---------------------------->
+<SCRIPT type=text/javascript>
+  <!--
+ function notice(){
+   menutext.style.left=document.body.scrollLeft+event.clientX
+   menutext.style.top=document.body.scrollTop+event.clientY
+   menutext.style.visibility="visible"
+   return false
+  }
+
+function hidenotice(){
+   menutext.style.visibility="hidden"
+ }
+
+  //-->
+</SCRIPT>
+<!--[if IE]><![endif]-->
+<META content="MSHTML 6.00.2800.1276" name=GENERATOR></HEAD>
+<BODY>
+<DIV id=menutext>
+<DIV url=""></DIV></DIV><!-- script to kill right-click -->
+<SCRIPT type=text/javascript>
+   <!--
+   document.oncontextmenu=notice;
+   if (document.all&&window.print)
+      document.body.onclick=hidenotice;
+   //-->
+</SCRIPT>
+<!-- Entire Document Starts Here -->
+<DIV align=center><BR><!---- Start of Whole Content Body. EG: all content tables will go inside this table --->
+<TABLE cellSpacing=0 cellPadding=0 width=620 border=0>
+  <TBODY>
+  <TR><!---- Main (right) column starts here ----------------------------------------------->
+    <TD vAlign=top width=620><!-- Start of Content Window #1 -->
+      <DIV><!-- Start of Table Header -->
+      <TABLE cellSpacing=0 cellPadding=0 width=620 border=0>
+        <TBODY>
+        <TR>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tableborder width=612 height=2></TD>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=bodybackground width=4 height=2></TD></TR>
+        <TR>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tablebody width=612 height=2></TD>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=bodybackground width=4 height=2></TD></TR>
+        <TR>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tablebody width=612 height=2></TD>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tableshadow width=4 height=2></TD></TR></TBODY></TABLE><!-- End of Table Header --><!-- Start of Table Body -->
+      <TABLE cellSpacing=0 cellPadding=0 width=620 border=0>
+        <TBODY>
+        <TR>
+          <TD class=tableborder width=2><BR></TD>
+          <TD class=tablebody width=8><BR></TD>
+          <TD class=tablebody vAlign=top width=600><!-- Window content goes here -->
+            <H1>ASMSchool - Lesson 2</H1>
+            <H2>Arithmetic and Logical Operators!</H2>
+            <HR align=left width="30%" noShade SIZE=4>
+            &nbsp;&nbsp;&nbsp;&nbsp;Here's where things get fun! Now that we 
+            know how to move data around to suit our needs, we need to know how 
+            to MANIPULATE data! We want to mess with it, we want to change it, 
+            we want to screw it all up! And this is where all that happens. Most 
+            of the arithmetic and logical operations can only be performed 
+            between the <I>accumulator</I> and either an 8-bit register, a byte 
+            of immediate data, or a byte of data located in memory that is 
+            indexed by register pair <B>HL</B>. Note that arithmetic and logical 
+            operators DO NOT allow direct addressing. If an operation produces a 
+            result, it replaces the operand in <B>A</B> with the result. Note 
+            that some instructions don't have direct results, some just affect 
+            flags in the <B>F</B> register.<BR><BR>Ok, first on our list of math 
+            is the 8-bit Arithmetic and Logical opcodes. These work with 8-bit 
+            pieces of data and produce results, if any, that are 8-bit. Of 
+            course, almost every instruction affects one of the four flags in 
+            the <B>F</B> register, and the flags affected are listed with each 
+            instruction. 
+            <H2>8-bit Arithmetic and Logical Instructions</H2><TT><B>ADD A, 
+            r<BR>ADD A, n<BR>ADD A, (HL)</B></TT><BR>This is the very simple 
+            <B>ADD</B> instruction. It basically adds the contents of register 
+            <B>A</B> with the second operand, and places the result in <B>A</B>. 
+            The second operand can be either an 8-bit register <I>r</I>, or a 
+            single byte of immediate data <I>n</I>, or a byte in memory 
+            addressed by the register pair <B>HL</B>.<BR>Flags affected 
+            are:<BR><TT>Z: set according to result<BR>C: set according to 
+            result<BR>N: reset (0)<BR>H: set according to 
+            result<BR></TT><BR><BR><TT><B>ADC A, r<BR>ADC A, n<BR>ADC A, 
+            (HL)</B></TT><BR>This is the <B>ADD</B> with <I>Carry</I> 
+            instruction. It acts exactly like a standard ADD, including 
+            operands, except that it adds the contents of the single-bit 
+            <I>Carry</I> flag to the result. Helpful for things like adding 
+            large numbers. =)<BR><TT>Z: set according to result<BR>C: set 
+            according to result<BR>N: reset (0)<BR>H: set according to 
+            result<BR></TT><BR><BR><TT><B>SUB r<BR>SUB n<BR>SUB 
+            (HL)</B></TT><BR>The <B>SUB</B> instruction subtracts the operand 
+            from the <B>A</B> register and leaves the result in <B>A</B>. Same 
+            types of operands as the <B>ADD</B> instruction.<BR><TT>Z: set 
+            according to result<BR>C: set according to result<BR>N: set 
+            (1)<BR>H: set according to result<BR></TT><BR><B>NOTE:</B> this 
+            instruction DOES NOT have a destination specified because it is 
+            implied as ALWAYS being register <B>A</B>. <BR><BR><TT><B>SBC A, 
+            r<BR>SBC A, n<BR>SBC A, (HL)</B></TT><BR>This is (as you probably 
+            guessed) the <B>SUB</B> instruction with <I>Carry</I>. It subtracts 
+            the <I>Carry</I> flag from the result.<BR><TT>Z: set according to 
+            result<BR>C: set according to result<BR>N: set (1)<BR>H: set 
+            according to result<BR></TT><BR><BR><TT><B>AND r<BR>AND n<BR>AND 
+            (HL)</B></TT><BR>This instruction LOGICALLY <B>AND</B>'s each bit of 
+            both register <B>A</B> and the operand together and leaves the 
+            result in <B>A</B>.<BR><TT>Z: set according to result<BR>C: reset 
+            (0)<BR>N: reset (0)<BR>H: set (1)<BR></TT><BR><B>NOTE:</B> this 
+            instruction DOES NOT have a destination specified because it is 
+            implied as ALWAYS being register <B>A</B>. <BR><BR><TT><B>OR r<BR>OR 
+            n<BR>OR (HL)</B></TT><BR>This instruction LOGICALLY <B>OR</B>'s each 
+            bit of both register <B>A</B> and the operand together and leaves 
+            the result in <B>A</B>.<BR><TT>Z: set according to result<BR>C: 
+            reset (0)<BR>N: reset (0)<BR>H: reset (0)<BR></TT><BR><B>NOTE:</B> 
+            this instruction DOES NOT have a destination specified because it is 
+            implied as ALWAYS being register <B>A</B>. <BR><BR><TT><B>XOR 
+            r<BR>XOR n<BR>XOR (HL)</B></TT><BR>This instruction LOGICALLY 
+            <B>XOR</B>'s each bit of both register <B>A</B> and the operand 
+            together and leaves the result in <B>A</B>.<BR><TT>Z: set according 
+            to result<BR>C: reset (0)<BR>N: reset (0)<BR>H: reset 
+            (0)<BR></TT><BR><B>NOTE:</B> this instruction DOES NOT have a 
+            destination specified because it is implied as ALWAYS being register 
+            <B>A</B>. <BR><BR><TT><B>CP r<BR>CP n<BR>CP (HL)<BR></B></TT>This 
+            instruction <B>C</B>om<B>P</B>ares the operand with the contents of 
+            the <I>accumulator</I> by subtracting the operand from the 
+            <I>accumulator</I>. This instruction differs from the <B>SUB</B> 
+            instruction in that the contents of <B>A</B> aren't changed, only 
+            the flags.<BR><TT>Z: set according to result<BR>C: set according to 
+            result<BR>N: set (1)<BR>H: set according to 
+            result<BR></TT><BR><B>NOTE:</B> this instruction DOES NOT have a 
+            destination specified because it is implied as ALWAYS being register 
+            <B>A</B>. <BR><BR><TT><B>INC r<BR>INC (HL)</B></TT><BR>This 
+            instruction <B>INC</B>rements (adds) the operand (an 8-bit register) 
+            by one. In the case of <B>INC (HL)</B>, the 8-bit value at the 
+            memory location contained in register pair <B>HL</B> is 
+            incremented.<BR><TT>Z: set according to result<BR>C: not 
+            affected<BR>N: reset (0)<BR>H: set according to 
+            result<BR></TT><BR><BR><TT><B>DEC r<BR>DEC (HL)</B></TT><BR>This 
+            instruction <B>DEC</B>rements (subtracts) the operand (an 8-bit 
+            register) by one. In the case of <B>DEC (HL)</B>, the 8-bit value at 
+            the memory location contained in register pair <B>HL</B> is 
+            incremented.<BR><TT>Z: set according to result<BR>C: not 
+            affected<BR>N: reset (0)<BR>H: set according to 
+            result<BR></TT><BR><BR><!----------------------------------------------------------------------------------------------------->
+            <HR noShade SIZE=4>
+
+            <H3>Wow</H3><BR>If you've made it this far, you have amazing 
+            stamina... or you just skipped over that last set of opcodes (shame 
+            on you!). Our next section has the 16-bit arithmetic opcodes... time 
+            to work with BIGGER data!!! hehehehe.... <BR><BR>
+            <H2>16-bit Arithmetic Instructions</H2><TT><B>ADD HL, 
+            rr</B></TT><BR>This instruction adds the contents of register pair 
+            <I>rr</I> to register pair <B>HL</B>. <I>rr</I> can be any of <B>BC, 
+            DE, HL, or SP</B>.<BR><TT>Z: not affected<BR>C: set according to 
+            result<BR>N: reset (0)<BR>H: undefined<BR></TT><BR><BR><TT><B>INC 
+            rr</B></TT><BR>This instruction increments the contents of register 
+            pair <I>rr</I> by one. <I>rr</I> can be any of <B>BC, DE, HL, or 
+            SP</B>.<BR><TT>Z: not affected<BR>C: not affected<BR>N: not 
+            affected<BR>H: not affected<BR></TT><BR><BR><TT><B>DEC 
+            rr</B></TT><BR>This instruction decrements the contents of register 
+            pair <I>rr</I> by one. <I>rr</I> can be any of <B>BC, DE, HL, or 
+            SP</B>.<BR><TT>Z: not affected<BR>C: not affected<BR>N: not 
+            affected<BR>H: not affected<BR></TT><BR>Ok, so there isn't much that 
+            works with 16-bit numbers, this is because the GameBoy cpu is 
+            <I>8-bit</I>, and therefore works most efficiently with 8-bit 
+            numbers. <BR><BR>
+            <HR noShade SIZE=4>
+
+            <H2>Rotate and Shift Operations</H2>Well, now that we know how to do 
+            standard arithmetic, like adding and subtracting and some logical 
+            operations, we need to know how to do rotations and shifts. These 
+            operations are pretty damn handy for bitwise stuff and building more 
+            complex operations, which we'll see in later 
+            lessons.<BR><BR><TT><B>RLCA</B></TT><BR>Rotate Left Circular 
+            Accumulator. This instruction rotates <B>A</B> left one bit, placing 
+            bit 7 at bit 0 AND in the <I>Carry</I> flag.<BR><IMG height=44 
+            alt=RLCA src="DuoDreamer's Dreamscape_files/rlc.gif" 
+            width=184><BR><TT>Z: not affected<BR>C: set according to 
+            result<BR>N: reset (0)<BR>H: reset (0)<BR></TT><BR><BR><TT><B>RLC r 
+            or (HL)</B></TT><BR>Rotate Left Circular. This instruction rotates 
+            either register r of the byte located at the address in <B>HL</B> 
+            left one bit, placing bit 7 at bit 0 AND in the <I>Carry</I> 
+            flag.<BR><IMG height=44 alt="RLC r or (HL)" 
+            src="DuoDreamer's Dreamscape_files/rlc.gif" width=184><BR><TT>Z: set 
+            according to result<BR>C: set according to result<BR>N: reset 
+            (0)<BR>H: reset (0)<BR></TT><BR><BR><TT><B>RLA</B></TT><BR>Rotate 
+            Left Accumulator. This instruction rotates <B>A</B> left one bit, 
+            placing bit 7 into the <I>Carry</I> flag and the contents of the 
+            <I>Carry</I> flag into bit 0 of <B>A</B><BR><IMG height=44 alt=RLA 
+            src="DuoDreamer's Dreamscape_files/rl.gif" width=184><BR><TT>Z: not 
+            affected<BR>C: set according to result<BR>N: reset (0)<BR>H: reset 
+            (0)<BR></TT><BR><BR><TT><B>RL r or (HL)</B></TT><BR>Rotate Left. 
+            This instruction rotates either register <I>r</I> or the byte 
+            located at the address in <B>HL</B> left one bit, placing bit 7 into 
+            the <I>Carry</I> flag and the contents of the <I>Carry</I> flag into 
+            bit 0 of <B>A</B><BR><IMG height=44 alt="RL r or (HL)" 
+            src="DuoDreamer's Dreamscape_files/rl.gif" width=184><BR><TT>Z: set 
+            according to result<BR>C: set according to result<BR>N: reset 
+            (0)<BR>H: reset (0)<BR></TT><BR><BR>
+            <HR align=left width="30%" noShade SIZE=4>
+            <TT><B>RRCA</B></TT><BR>Rotate Right Circular Accumulator. This 
+            instruction rotates <B>A</B> right one bit, placing bit 0 at bit 7 
+            AND in the <I>Carry</I> flag.<BR><IMG height=44 alt=RRCA 
+            src="DuoDreamer's Dreamscape_files/rrc.gif" width=184><BR><TT>Z: not 
+            affected<BR>C: set according to result<BR>N: reset (0)<BR>H: reset 
+            (0)<BR></TT><BR><BR><TT><B>RRC r or (HL)</B></TT><BR>Rotate Right 
+            Circular. This instruction rotates either register r of the byte 
+            located at the address in <B>HL</B> right one bit, placing bit 0 at 
+            bit 7 AND in the <I>Carry</I> flag.<BR><IMG height=44 
+            alt="RRC r or (HL)" src="DuoDreamer's Dreamscape_files/rrc.gif" 
+            width=184><BR><TT>Z: set according to result<BR>C: set according to 
+            result<BR>N: reset (0)<BR>H: reset 
+            (0)<BR></TT><BR><BR><TT><B>RRA</B></TT><BR>Rotate Right Accumulator. 
+            This instruction rotates <B>A</B> right one bit, placing bit 0 into 
+            the <I>Carry</I> flag and the contents of the <I>Carry</I> flag into 
+            bit 7 of <B>A</B><BR><IMG height=44 alt=RRA 
+            src="DuoDreamer's Dreamscape_files/rr.gif" width=184><BR><TT>Z: not 
+            affected<BR>C: set according to result<BR>N: reset (0)<BR>H: reset 
+            (0)<BR></TT><BR><BR><TT><B>RR r or (HL)</B></TT><BR>Rotate Right. 
+            This instruction rotates either register <I>r</I> or the byte 
+            located at the address in <B>HL</B> right one bit, placing bit 0 
+            into the <I>Carry</I> flag and the contents of the <I>Carry</I> flag 
+            into bit 7 of <B>A</B><BR><IMG height=44 alt="RR r or (HL)" 
+            src="DuoDreamer's Dreamscape_files/rr.gif" width=184><BR><TT>Z: set 
+            according to result<BR>C: set according to result<BR>N: reset 
+            (0)<BR>H: reset (0)<BR></TT><BR><BR><TT><B>SLA r or 
+            (HL)</B></TT><BR>Shift Left Arithmetically. This instruction shifts 
+            either register <I>r</I> or the byte located at the address in 
+            <B>HL</B> left one bit, placing 0 into bit 0, and placing bit 7 into 
+            the <I>Carry</I> flag.<BR><IMG height=44 alt="SLA r or (HL)" 
+            src="DuoDreamer's Dreamscape_files/sla.gif" width=184><BR><TT>Z: set 
+            according to result<BR>C: set according to result<BR>N: reset 
+            (0)<BR>H: reset (0)<BR></TT><BR><BR><TT><B>SRA r or 
+            (HL)</B></TT><BR>Shift Right Arithmetically. This instruction shifts 
+            either register <I>r</I> or the byte located at the address in 
+            <B>HL</B> right one bit, placing bit 0 into the <I>Carry</I> flag, 
+            and leaving bit 7 untouched.<BR><IMG height=44 alt="SRA r or (HL)" 
+            src="DuoDreamer's Dreamscape_files/sra.gif" width=184><BR><TT>Z: set 
+            according to result<BR>C: set according to result<BR>N: reset 
+            (0)<BR>H: reset (0)<BR></TT><BR><BR><TT><B>SRL r or 
+            (HL)</B></TT><BR>Shift Right Logically. This instruction shifts 
+            either register <I>r</I> or the byte located at the address in 
+            <B>HL</B> right one bit, placing 0 into bit 7, and placing bit 0 
+            into the <I>Carry</I> flag.<BR><IMG height=44 alt="SRL r or (HL)" 
+            src="DuoDreamer's Dreamscape_files/srl.gif" width=184><BR><TT>Z: set 
+            according to result<BR>C: set according to result<BR>N: reset 
+            (0)<BR>H: reset (0)<BR></TT><BR><BR><B>NOTE:</B> there is no SLL 
+            instruction, seeing as every other type of shift has both left and 
+            right versions. The reason for this is that SHIFTING LEFT LOGICALLY 
+            ends up being identical to SHIFTING LEFT ARITHMETICALLY. Go 
+            figure.<BR><BR><BR>
+            <HR noShade SIZE=4>
+
+            <H3>Bit Manipulation</H3>Ok, so now that we know how to move whole 
+            registers around, what happens if we want to change a single bit or 
+            test the contents of a bit? Well that's where the instructions BIT, 
+            SET, and RES come in.<BR><BR><TT><B>BIT b, r<BR>BIT b, 
+            (HL)</B></TT><BR>Tests bit <I>b</I> in register <I>r</I> or the byte 
+            addressed in HL. Basically the specified bit gets copied to the Z 
+            flag AND INVERTED. Why inverted? Because the Z flag is set when a 
+            result is ZERO, that's why. =) <BR>Flags affected are:<BR><TT>Z: set 
+            according to result<BR>C: no effect<BR>N: reset (0)<BR>H: set 
+            (1)<BR></TT><BR><BR><TT><B>SET b, r<BR>SET b, (HL)</B></TT><BR>Sets 
+            (1) bit <I>b</I> in register <I>r</I> or the byte addressed in HL. 
+            <BR>Flags affected are:<BR><TT>Z: no effect<BR>C: no effect<BR>N: no 
+            effect<BR>H: no effect<BR></TT><BR><BR><TT><B>RES b, r<BR>RES b, 
+            (HL)</B></TT><BR>Resets (0) bit <I>b</I> in register <I>r</I> or the 
+            byte addressed in HL. <BR>Flags affected are:<BR><TT>Z: no 
+            effect<BR>C: no effect<BR>N: no effect<BR>H: no 
+            effect<BR></TT><BR><BR>Well that's about it for this lesson, that 
+            was alot of stuff to digest.<BR><BR>&nbsp;&nbsp;&nbsp;&nbsp;For all 
+            the specific limitations and abilities when using these opcodes, see 
+            the instruction set reference guide also on my 
+            webpage.<BR><BR><BR><BR><!-- Window content ends here --></TD>
+          <TD class=tablebody width=4><BR></TD>
+          <TD class=tableborder width=2><BR></TD>
+          <TD class=tableshadow width=4><BR></TD></TR></TBODY></TABLE><!-- End of Table Body --><!-- Start of Table Footer -->
+      <TABLE cellSpacing=0 cellPadding=0 width=620 border=0>
+        <TBODY>
+        <TR>
+          <TD class=tableborder width=2 height=3></TD>
+          <TD class=tablebody width=2 height=3></TD>
+          <TD class=tablebody width=630 height=3></TD>
+          <TD class=tableborder width=2 height=3></TD>
+          <TD class=tableshadow width=4 height=3></TD></TR>
+        <TR>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tableborder width=630 height=2></TD>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tableshadow width=4 height=2></TD></TR>
+        <TR>
+          <TD class=bodybackground width=2 height=3></TD>
+          <TD class=bodybackground width=2 height=3></TD>
+          <TD class=tableshadow width=630 height=3></TD>
+          <TD class=tableshadow width=2 height=3></TD>
+          <TD class=tableshadow width=4 height=3></TD></TR></TBODY></TABLE><!-- End of Table Footer --></DIV><!-- End of Content Window #1 --><BR><!-- Start of footnote window -->
+      <DIV><!-- Start of Table Header -->
+      <TABLE cellSpacing=0 cellPadding=0 width=620 border=0>
+        <TBODY>
+        <TR>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tableborder width=612 height=2></TD>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=bodybackground width=4 height=2></TD></TR>
+        <TR>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tablebody width=612 height=2></TD>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=bodybackground width=4 height=2></TD></TR>
+        <TR>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tablebody width=612 height=2></TD>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tableshadow width=4 height=2></TD></TR></TBODY></TABLE><!-- End of Table Header --><!-- Start of Table Body -->
+      <TABLE cellSpacing=0 cellPadding=0 width=620 border=0>
+        <TBODY>
+        <TR>
+          <TD class=tableborder width=2><BR></TD>
+          <TD class=tablebody width=8><BR></TD>
+          <TD class=tablebody vAlign=top width=600><!-- Window content goes here --><!-- Stuff Goes here -->
+            <DIV class=neg2>This webpage was designed to be viewed in any HTML 
+            4.0/CSS1 compliant browser, but since Netscape sucks (opinions are 
+            like ass holes, everybody has got one), everything looks like sh*t 
+            in Netscape, so go get IE 5.5 or Opera 5.0, which both are great 
+            browsers (and consequently, display my webpage correctly). 
+            <BR><BR>DISCLAIMER: You will NOT find commercial ROMS on this 
+            website, nor will I answer e-mail in regards to where you can find 
+            ROM's on the Internet. Downloading a ROM image of a game you do not 
+            own is illegal. I will not answer e-mail regarding 
+            Pokémon<SUP>TM</SUP>. This website, to the best of my knowledge does 
+            not contain any illegally obtained information, nor any illegal 
+            content. Not everything on this webpage was created by me. Some of 
+            the content, images, etc, have come from many places, and I thank 
+            the friends who have helped me with everything (that means you 
+            Sacher!). Should you not like my views, opinions, ideas, etc, etc, 
+            then pardon me and PISS OFF. </DIV><BR></TD>
+          <TD class=tablebody width=4><BR></TD>
+          <TD class=tableborder width=2><BR></TD>
+          <TD class=tableshadow width=4><BR></TD></TR></TBODY></TABLE><!-- End of Table Body --><!-- Start of Table Footer -->
+      <TABLE cellSpacing=0 cellPadding=0 width=620 border=0>
+        <TBODY>
+        <TR>
+          <TD class=tableborder width=2 height=3></TD>
+          <TD class=tablebody width=2 height=3></TD>
+          <TD class=tablebody width=630 height=3></TD>
+          <TD class=tableborder width=2 height=3></TD>
+          <TD class=tableshadow width=4 height=3></TD></TR>
+        <TR>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tableborder width=630 height=2></TD>
+          <TD class=tableborder width=2 height=2></TD>
+          <TD class=tableshadow width=4 height=2></TD></TR>
+        <TR>
+          <TD class=bodybackground width=2 height=3></TD>
+          <TD class=bodybackground width=2 height=3></TD>
+          <TD class=tableshadow width=630 height=3></TD>
+          <TD class=tableshadow width=2 height=3></TD>
+          <TD class=tableshadow width=4 height=3></TD></TR></TBODY></TABLE><!-- End of Table Footer --></DIV><!-- End of Footnote window ->
+
+</td>
+<!---- Main (right) column ends here -------------------------------------------------></TD></TR></TBODY></TABLE></DIV></BODY></HTML>

@@ -1,0 +1,72 @@
+.gray {
+	BACKGROUND-COLOR: #dddddd
+}
+.tableheader {
+	FONT-WEIGHT: bold; FONT-SIZE: 12pt
+}
+.tableborder {
+	BACKGROUND-COLOR: #000000
+}
+.tablebody {
+	FONT-SIZE: smaller; BACKGROUND-COLOR: #e0f0ff; TEXT-ALIGN: left
+}
+.tableshadow {
+	BACKGROUND-COLOR: #5080c0; TEXT-ALIGN: right
+}
+.bodybackground {
+	BACKGROUND-COLOR: #99ccff; TEXT-ALIGN: left
+}
+.headerbody {
+	FONT-WEIGHT: bold; FONT-SIZE: 14px; COLOR: #ffffff; BACKGROUND-COLOR: #000080; TEXT-ALIGN: left
+}
+.neg1 {
+	FONT-SIZE: 8pt
+}
+.neg2 {
+	FONT-SIZE: 7pt
+}
+.pos1 {
+	FONT-SIZE: 10pt
+}
+.pos2 {
+	FONT-SIZE: 12pt
+}
+.pos3 {
+	FONT-SIZE: 14pt
+}
+.pos4 {
+	FONT-SIZE: 20pt
+}
+.norepeat {
+	BACKGROUND-POSITION: center 50%; BACKGROUND-REPEAT: no-repeat; BACKGROUND-COLOR: #ffffff
+}
+PRE {
+	FONT-SIZE: 8pt
+}
+TT {
+	FONT-SIZE: 8pt
+}
+TD {
+	FONT-SIZE: 8pt; COLOR: #000000; FONT-FAMILY: Arial
+}
+TABLE {
+	BORDER-RIGHT: #808080 0px; BORDER-TOP: #808080 0px; FONT-WEIGHT: normal; FONT-SIZE: 8pt; BORDER-LEFT: #808080 0px; COLOR: #000000; BORDER-BOTTOM: #808080 0px; FONT-FAMILY: Arial
+}
+BODY {
+	SCROLLBAR-FACE-COLOR: #5080c0; FONT-WEIGHT: bold; FONT-SIZE: 8pt; BACKGROUND-ATTACHMENT: fixed; SCROLLBAR-HIGHLIGHT-COLOR: #000000; SCROLLBAR-SHADOW-COLOR: #a0c0ff; COLOR: #000000; SCROLLBAR-ARROW-COLOR: #000000; SCROLLBAR-TRACK-COLOR: #99ccff; FONT-FAMILY: Arial; SCROLLBAR-BASE-COLOR: #000000; BACKGROUND-COLOR: #99ccff; scrollbar-3d-light-color: #000000; scrollbar-dark-shadow-color: #000000
+}
+A:visited {
+	COLOR: #303030; TEXT-DECORATION: none
+}
+A:link {
+	CURSOR: default; COLOR: #000000; TEXT-DECORATION: none
+}
+A:hover {
+	CURSOR: default; COLOR: #ff0000; TEXT-DECORATION: none
+}
+A:active {
+	COLOR: #ff0000; TEXT-DECORATION: none
+}
+.light {
+	COLOR: #b0b0b0; TEXT-DECORATION: none
+}

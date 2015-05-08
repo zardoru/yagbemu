@@ -1,0 +1,906 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0064)http://www.geocities.co.jp/Bookend/5829/soft/emugb/gb_opcode.htm -->
+<HTML><HEAD><TITLE>Gameboy Opcodes and Timings</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=windows-1252">
+<STYLE>A:link {
+	COLOR: cyan; TEXT-DECORATION: none
+}
+A:visited {
+	COLOR: cyan; TEXT-DECORATION: none
+}
+A:active {
+	COLOR: cyan; TEXT-DECORATION: none
+}
+A:hover {
+	COLOR: white; TEXT-DECORATION: none
+}
+TD {
+	FONT-SIZE: 12px
+}
+</STYLE>
+
+<META content="MSHTML 6.00.2800.1276" name=GENERATOR></HEAD>
+<BODY bgColor=#000000><!-- HEADER -->
+<TABLE height=30 cellPadding=2 width="100%" bgColor=#0000c0 border=0>
+  <TBODY>
+  <TR>
+    <TD bgColor=#000080><FONT face=Arial color=#ffffff size=4><STRONG>Gameboy 
+      Opcodes and Timings </STRONG></FONT></TD></TR></TBODY></TABLE><!-- SECTIONS -->
+<TABLE height=30 cellPadding=10 width="100%" bgColor=#0000c0 border=0>
+  <TBODY>
+  <TR>
+    <TD bgColor=#000080><FONT face=Arial color=#ffffff size=2>
+      <P>The GameBoy is based on the Zilog Z80 processor.&nbsp; There are seven 
+      main registers (A, B, C, D, E, H, L) all are 8bit registers, six of these 
+      can pair together to make three 16bit registers (BC, DE, HL).&nbsp; There 
+      is also a Flags (F) register, which for the purposes of some commands is 
+      paired with the A register to make a 16bit register (AF) , a Stack Pointer 
+      and a Program Counter.&nbsp; Following is a table showing these as well as 
+      the bits of the flags register. </P></FONT>
+      <P><FONT face=Arial 
+      color=#ffffff><STRONG><U><BIG>REGISTERS</BIG></U></STRONG></FONT> </P>
+      <P>
+      <TABLE width="100%" border=1><!-- TABLE HEADER -->
+        <TBODY>
+        <TR>
+          <TD align=middle width="25%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>HIGH BYTE (bits 15 - 8 if paired)</FONT></TD>
+          <TD align=middle width="25%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>LOW BYTE (bits 7 - 0)</FONT></TD>
+          <TD align=middle width="50%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>DESCRIPTION</FONT></TD></TR><!-- TABLE DATA -->
+        <TR>
+          <TD align=middle width="25%"><FONT face=Arial 
+          color=#ffffff>A</FONT></TD>
+          <TD align=middle width="25%"><FONT face=Arial 
+          color=#ffffff>F</FONT></TD>
+          <TD align=middle width="50%"><FONT face=Arial 
+            color=#ffffff>Accumulator / Flags registers</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="25%"><FONT face=Arial 
+          color=#ffffff>B</FONT></TD>
+          <TD align=middle width="25%"><FONT face=Arial 
+          color=#ffffff>C</FONT></TD>
+          <TD align=middle width="50%"><FONT face=Arial color=#ffffff>General 
+            Purpose Registers</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="25%"><FONT face=Arial 
+          color=#ffffff>D</FONT></TD>
+          <TD align=middle width="25%"><FONT face=Arial 
+          color=#ffffff>E</FONT></TD>
+          <TD align=middle width="50%"><FONT face=Arial color=#ffffff>General 
+            Purpose Registers</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="25%"><FONT face=Arial 
+          color=#ffffff>H</FONT></TD>
+          <TD align=middle width="25%"><FONT face=Arial 
+          color=#ffffff>L</FONT></TD>
+          <TD align=middle width="50%"><FONT face=Arial color=#ffffff>General 
+            Purpose Registers - Usually a memory pointer</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="50%" colSpan=2><FONT face=Arial 
+            color=#ffffff>SP</FONT></TD>
+          <TD align=middle width="50%"><FONT face=Arial color=#ffffff>Stack 
+            Pointer</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="50%" colSpan=2><FONT face=Arial 
+            color=#ffffff>PC</FONT></TD>
+          <TD align=middle width="50%"><FONT face=Arial color=#ffffff>Program 
+            Counter</FONT></TD></TR></TBODY></TABLE></P>
+      <P><FONT face=Arial color=#ffffff><STRONG><U><BIG>FLAGS 
+      REGISTER</BIG></U></STRONG></FONT> </P>
+      <TABLE width="100%" border=1><!-- TABLE HEADER -->
+        <TBODY>
+        <TR>
+          <TD align=middle width="17%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>BIT NUMBER</FONT></TD>
+          <TD align=middle width="13%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>FLAG</FONT></TD>
+          <TD align=middle width="70%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>DESCRIPTION</FONT></TD></TR><!-- TABLE DATA -->
+        <TR>
+          <TD align=middle width="17%"><FONT face=Arial 
+          color=#ffffff>7</FONT></TD>
+          <TD align=middle width="13%"><FONT face=Arial 
+          color=#ffffff>Z</FONT></TD>
+          <TD align=middle width="70%"><FONT face=Arial color=#ffffff>Zero 
+            Flag.&nbsp;Set if the last math operation resulted in a 
+          zero</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="17%"><FONT face=Arial 
+          color=#ffffff>6</FONT></TD>
+          <TD align=middle width="13%"><FONT face=Arial 
+          color=#ffffff>N</FONT></TD>
+          <TD align=middle width="70%"><FONT face=Arial color=#ffffff>Subtract 
+            Flag. &nbsp;Set if the last math operation involved a 
+            subtraction</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="17%"><FONT face=Arial 
+          color=#ffffff>5</FONT></TD>
+          <TD align=middle width="13%"><FONT face=Arial 
+          color=#ffffff>H</FONT></TD>
+          <TD align=middle width="70%"><FONT face=Arial color=#ffffff>Half 
+            Carry Flag. &nbsp;Set if the last math operation cause a carry from 
+            the lower nibble (bit 3-4)</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="17%"><FONT face=Arial 
+          color=#ffffff>4</FONT></TD>
+          <TD align=middle width="13%"><FONT face=Arial 
+          color=#ffffff>C</FONT></TD>
+          <TD align=middle width="70%"><FONT face=Arial color=#ffffff>Carry 
+            Flag. &nbsp; Set if the last math operation cause a carry (bit 
+            7-8)</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="17%"><FONT face=Arial 
+          color=#ffffff>3</FONT></TD>
+          <TD align=middle width="13%"><FONT face=Arial 
+          color=#ffffff>X</FONT></TD>
+          <TD align=middle width="70%"><FONT face=Arial color=#ffffff>Not 
+            Used</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="17%"><FONT face=Arial 
+          color=#ffffff>2</FONT></TD>
+          <TD align=middle width="13%"><FONT face=Arial 
+          color=#ffffff>X</FONT></TD>
+          <TD align=middle width="70%"><FONT face=Arial color=#ffffff>Not 
+            Used</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="17%"><FONT face=Arial 
+          color=#ffffff>1</FONT></TD>
+          <TD align=middle width="13%"><FONT face=Arial 
+          color=#ffffff>X</FONT></TD>
+          <TD align=middle width="70%"><FONT face=Arial color=#ffffff>Not 
+            Used</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="17%"><FONT face=Arial 
+          color=#ffffff>0</FONT></TD>
+          <TD align=middle width="13%"><FONT face=Arial 
+          color=#ffffff>X</FONT></TD>
+          <TD align=middle width="70%"><FONT face=Arial color=#ffffff>Not 
+            Used</FONT></TD></TR></TBODY></TABLE>
+      <P><FONT face=Arial color=#ffffff><STRONG><U><BIG>COMMAND 
+      DESCRIPTIONS</BIG></U></STRONG></FONT> </P>
+      <TABLE width="100%" border=1><!-- TABLE DATA -->
+        <TBODY>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>ADC x, y<BR>ADD x, 
+            y<BR>AND x </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>Add y + CF to 
+            x<BR>Add y to x<BR>And x to A </FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>BIT b, x </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>Test bit b of x 
+            </FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>CALL c, x<BR>CALL 
+            x<BR>CCF<BR>CP x<BR>CPL </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>If condition c is 
+            true, call subroutine x<BR>Call subroutine x<BR>Complement carry 
+            flag<BR>Compare A with x<BR>Complement A </FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>DAA<BR>DEC x<BR>DI 
+            </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>Decimal adjust 
+            A<BR>Decrement x by 1<BR>Disable interrupts </FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>EI </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>Enable interrupts 
+            </FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>HALT </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>Halt (wait for 
+            interrupt or reset) </FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>INC x </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>Increment x by 1 
+            </FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>JP c, x<BR>JP x<BR>JR 
+            c, d<BR>JR d </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>If condition c is 
+            true jump to location x<BR>Jump to location x<BR>If condition c is 
+            true jump relative by d<BR>Jump relative by d </FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>LD x, y<BR>LDD x, 
+            y<BR>LDI x, y </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>Load x with y<BR>Load 
+            A with (HL), DEC HL<BR>Load A with (HL), INC HL</FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>NOP </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>No operation 
+          </FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>OR x </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>OR x to A 
+        </FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>POP x<BR>PUSH x 
+            </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>Pop x from the top of 
+            the stack, updating SP<BR>Push x onto the top of the stack, updating 
+            SP </FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>RES b, 
+            x<BR>RET<BR>RET c<BR>RETI<BR>RST x </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>Reset bit b of 
+            x<BR>Return from subroutine<BR>If condition c is true, return from 
+            subroutine<BR>Return from interrupt<BR>Call subbroutine at x (x = 
+            00h, 08h, 10h, 18h, 20h, 28h, 30h, 38h) </FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>SBC x<BR>SCF<BR>SET 
+            b, x<BR>STOP<BR>SUB x<BR>SWAP x </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>Subtract y + CF from 
+            x<BR>Set carry flag<BR>Set bit b of x<BR>Stop CPU until P1-P10 go 
+            high<BR>Subtract x from A<BR>Swap register nibbles </FONT></TD></TR>
+        <TR>
+          <TD width="50%"><FONT face=Arial color=#ffffff>XOR x </FONT></TD>
+          <TD width="50%"><FONT face=Arial color=#ffffff>XOR x to A 
+        </FONT></TD></TR></TBODY></TABLE>
+      <P><FONT face=Arial 
+      color=#ffffff><STRONG><U><BIG>COMMANDS</BIG></U></STRONG></FONT> </P>
+      <P><FONT face=Arial color=#ffffff size=2>Please note that the timings for 
+      the instructions are given in Machine Cycles, to convert these to Clock 
+      Cycles just multiply the number by four.&nbsp; The four columns Z,N,H,C 
+      refer to the flags in the&nbsp; flags register, 0 means reset, 1 means 
+      set, X means set as expected (i.e. if the result is zero then the zero 
+      flags would be set, else reset) and blank means it is not effected. 
+      </FONT></P>
+      <TABLE width="100%" border=1><!-- TABLE HEADER -->
+        <TBODY>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0>&nbsp;</TD>
+          <TD width="30%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>Op-code</FONT></TD>
+          <TD width="20%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>Destination</FONT></TD>
+          <TD width="16%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>Source</FONT></TD>
+          <TD width="2%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>Z</FONT></TD>
+          <TD width="1%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>N</FONT></TD>
+          <TD width="1%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>H</FONT></TD>
+          <TD width="1%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>C</FONT></TD>
+          <TD width="5%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>M/C</FONT></TD>
+          <TD width="5%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff>Bytes</FONT></TD></TR><!-- TABLE DATA -->
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0 rowSpan=3>
+            <P align=center><FONT face=Arial 
+            color=#ffffff><BIG><BIG><BIG>A</BIG></BIG></BIG></FONT></P></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>ADC A, (HL)<BR>ADC A, 
+            n8<BR>ADC A, r8 </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>A<BR>A<BR>A 
+</FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>8bit 
+            integer<BR>A, B, C, D, E, H, L </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0<BR>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2<BR>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1<BR>2<BR>1 
+        </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>ADD A,(HL)<BR>ADD A, 
+            n8<BR>ADD A, r8<BR>ADD HL, r16<BR>ADD SP, e8 </FONT></TD>
+          <TD width="20%"><FONT face=Arial 
+            color=#ffffff>A<BR>A<BR>A<BR>HL<BR>SP </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>8bit 
+            integer<BR>A, B, C, D, E, H, L<BR>BC, DE, SP<BR>8bit offset 
+          </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X<BR><BR>0 
+            </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0<BR>0<BR>0<BR>0 
+            </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X<BR>X<BR>X 
+            </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X<BR>X<BR>X 
+            </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2<BR>1<BR>2<BR>4 
+            </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1<BR>2<BR>1<BR>1<BR>2 
+            </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>AND (HL)<BR>AND 
+            n8<BR>AND r8 </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>A<BR>A<BR>A 
+</FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>8bit 
+            integer<BR>A, B, C, D, E, H, L </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0<BR>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>1<BR>1<BR>1 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0<BR>0 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2<BR>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1<BR>2<BR>1 
+        </FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0>
+            <P align=center><FONT face=Arial 
+            color=#ffffff><BIG><BIG><BIG>B</BIG></BIG></BIG></FONT></P></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>BIT n3, (HL)<BR>BIT 
+            n3, r8 </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>Zero Flag<BR>Zero 
+            Flag </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>1<BR>1 </FONT></TD>
+          <TD width="1%">&nbsp;<BR>&nbsp;<BR></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>3<BR>2 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2 </FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0 rowSpan=4><FONT 
+            face=Arial 
+color=#ffffff><BIG><BIG><BIG>C</BIG></BIG></BIG></FONT></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>CALL cc, n16<BR>CALL 
+            n16 </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>PC<BR>PC </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>16bit 
+            address<BR>16bit address </FONT></TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>6/3<BR>6 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>3<BR>3 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>CCF </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>Carry Flag </FONT></TD>
+          <TD width="16%">&nbsp;</TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>CP (HL)<BR>CP 
+            n8<BR>CP r8 </FONT></TD>
+          <TD width="20%"><FONT face=Arial 
+            color=#ffffff>Flags<BR>Flags<BR>Flags </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>8bit 
+            integer<BR>A, B, C, D, E, H, L </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>1<BR>1<BR>1 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2<BR>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1<BR>2<BR>1 
+        </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>CPL </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>A </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>A </FONT></TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>1 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>1 </FONT></TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0 rowSpan=3><FONT 
+            face=Arial 
+color=#ffffff><BIG><BIG><BIG>D</BIG></BIG></BIG></FONT></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>DAA </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>A </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>A </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X </FONT></TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>DEC (HL)<BR>DEC 
+            r16<BR>DEC r8 </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(HL)<BR>BC, DE, HL, 
+            SP<BR>A, B, C, D, E, H, L </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>BC, DE, HL, 
+            SP<BR>A, B, C, D, E, H, L </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR><BR>X </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>1<BR><BR>1 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR><BR>X </FONT></TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>3<BR>2<BR>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1<BR>1<BR>1 
+        </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>DI </FONT></TD>
+          <TD width="20%">&nbsp;</TD>
+          <TD width="16%">&nbsp;</TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff><BIG><BIG><BIG>E</BIG></BIG></BIG></FONT></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>EI </FONT></TD>
+          <TD width="20%">&nbsp;</TD>
+          <TD width="16%">&nbsp;</TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff><BIG><BIG><BIG>H</BIG></BIG></BIG></FONT></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>HALT </FONT></TD>
+          <TD width="20%">&nbsp;</TD>
+          <TD width="16%">&nbsp;</TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff><BIG><BIG><BIG>I</BIG></BIG></BIG></FONT></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>INC (HL)<BR>INC 
+            r16<BR>INC r8 </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(HL)<BR>BC, DE, HL, 
+            SP<BR>A, B, C, D, E, H, L </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>BC, DE, HL, 
+            SP<BR>A, B, C, D, E, H, L </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR><BR>X </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR><BR>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR><BR>X </FONT></TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>3<BR>2<BR>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1<BR>1<BR>1 
+        </FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0 rowSpan=2><FONT 
+            face=Arial 
+color=#ffffff><BIG><BIG><BIG>J</BIG></BIG></BIG></FONT></TD>
+              <TD width="30%"><FONT face=Arial color=#ffffff>JP HL<BR>
+                JP cc, n16 
+            </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>PC<BR>PC </FONT></TD>
+              <TD width="16%"><FONT face=Arial color=#ffffff>HL<BR>
+                16bit address 
+            </FONT></TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1<BR>4/3 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1<BR>3 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>JP n16<BR>JR cc, 
+            e8<BR>JR e8 </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>PC<BR>PC<BR>PC 
+          </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>16bit address<BR>8bit 
+            offset<BR>8bit offset </FONT></TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>4<BR>3/2<BR>3 
+          </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>3<BR>2<BR>2 
+        </FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0 rowSpan=4><FONT 
+            face=Arial 
+color=#ffffff><BIG><BIG><BIG>L</BIG></BIG></BIG></FONT></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>LD (C), A<BR>LD (HL), 
+            n8<BR>LD (HL), r8<BR>LD (n16), A<BR>LD (n16), SP<BR>LD (r16), 
+            A<BR>LD A, (C)<BR>LD A, (n16)<BR>LD A, (r16)<BR>LD HL, SP + e8<BR>LD 
+            r16, n16<BR>LD r8, (HL)<BR>LD r8, n8<BR>LD r8, r8<BR>LD SP, HL 
+            </FONT></TD>
+          <TD width="20%"><FONT face=Arial 
+            color=#ffffff>(C)<BR>(HL)<BR>(HL)<BR>(16bit address)<BR>(16bit 
+            address)<BR>(BC), (DE), (HL)<BR>A<BR>A<BR>A<BR>HL<BR>BC, DE, HL, 
+            SP<BR>A, B, C, D, E, H, L<BR>A, B, C, D, E, H, L<BR>A, B, C, D, E, 
+            H, L<BR>SP </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>A<BR>8bit 
+            integer<BR>A, B, C, D, E, H, L<BR>A<BR>SP<BR>A<BR>(C)<BR>(16bit 
+            address)<BR>(BC), (DE), (HL)<BR>SP + 8bit offset<BR>16bit 
+            integer<BR>(HL)<BR>8bit integer<BR>A, B, C, D, E, H, L<BR>HL 
+          </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X </FONT></TD>
+          <TD width="5%"><FONT face=Arial 
+            color=#ffffff>2<BR>3<BR>2<BR>4<BR>5<BR>2<BR>2<BR>4<BR>2<BR>3<BR>3<BR>2<BR>2<BR>1<BR>2 
+            </FONT></TD>
+          <TD width="5%"><FONT face=Arial 
+            color=#ffffff>1<BR>2<BR>1<BR>3<BR>3<BR>1<BR>1<BR>3<BR>1<BR>2<BR>3<BR>1<BR>2<BR>1<BR>1 
+            </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>LDD (HL), A<BR>LDD A, 
+            (HL) </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(HL)<BR>A </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>A<BR>(HL) </FONT></TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1<BR>1 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>LDH (e8), A<BR>LDH A, 
+            (e8) </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(8bit offset)<BR>A 
+            </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>A<BR>(8bit offset) 
+            </FONT></TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>3<BR>3 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>LDI (HL), A<BR>LDI A, 
+            (HL) </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(HL)<BR>A </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>A<BR>(HL) </FONT></TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1<BR>1 </FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff><BIG><BIG><BIG>N</BIG></BIG></BIG></FONT></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>NOP </FONT></TD>
+          <TD width="20%">&nbsp;</TD>
+          <TD width="16%">&nbsp;</TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff><BIG><BIG><BIG>O</BIG></BIG></BIG></FONT></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>OR (HL)<BR>OR 
+            n8<BR>OR r8 </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>A<BR>A<BR>A 
+</FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>8bit 
+            integer<BR>A, B, C, D, E, H, L </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0<BR>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0<BR>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0<BR>0 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2<BR>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1<BR>2<BR>1 
+        </FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0 rowSpan=2><FONT 
+            face=Arial 
+color=#ffffff><BIG><BIG><BIG>P</BIG></BIG></BIG></FONT></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>POP r16 </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>AF, BC, DE, HL 
+          </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(SP) </FONT></TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>3 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>PUSH r16 </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(SP) </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>AF, BC, DE, HL 
+          </FONT></TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>4 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0 rowSpan=12><FONT 
+            face=Arial 
+color=#ffffff><BIG><BIG><BIG>R</BIG></BIG></BIG></FONT></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>RES n3, (HL)<BR>RES 
+            n3, r8 </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>Bit in memory<BR>Bit 
+            in register </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L </FONT></TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>3<BR>2 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>RET<BR>RET cc 
+          </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>PC<BR>PC </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff><BR>Condition Flag 
+            </FONT></TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>4<BR>5/2 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1<BR>1 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>RETI </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>PC </FONT></TD>
+          <TD width="16%">&nbsp;</TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>4 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>RL (HL)<BR>RL r8 
+            </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>4<BR>2 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>RLA </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>A </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>A </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>RLC (HL)<BR>RLC r8 
+            </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>4<BR>2 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>RLCA </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>A </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>A </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>RR (HL)<BR>RR r8 
+            </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>4<BR>2 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>RRA </FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>A </FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>A </FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0 </FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1 </FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>RRC (HL)<BR>RRC 
+            r8</FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L</FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L</FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>4<BR>2</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2</FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>RRCA</FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>A</FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>A</FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1</FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>RST f</FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>PC</FONT></TD>
+          <TD width="16%">&nbsp;</TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>4</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0 rowSpan=9><FONT 
+            face=Arial 
+color=#ffffff><BIG><BIG><BIG>S</BIG></BIG></BIG></FONT></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>SBC A, (HL)<BR>SBC A, 
+            n8<BR>SBC A, r8</FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>A<BR>A<BR>A</FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>8bit 
+            integer<BR>A, B, C, D, E, H, L</FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>1<BR>1<BR>1</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2<BR>1</FONT></TD>
+          <TD width="5%"><FONT face=Arial 
+        color=#ffffff>1<BR>2<BR>1</FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>SCF</FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>Carry Flag</FONT></TD>
+          <TD width="16%">&nbsp;</TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>1</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1</FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>SET n3, (HL)<BR>SET 
+            n3, r8</FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>Bit in memory<BR>Bit 
+            in memory</FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L</FONT></TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>3<BR>2</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2</FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>SLA (HL)<BR>SLA 
+            r8</FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L</FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L</FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>4<BR>2</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2</FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>SRA (HL)<BR>SRA 
+            r8</FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L</FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L</FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>4<BR>2</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2</FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>SRL (HL)<BR>SRL 
+            r8</FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L</FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L</FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>4<BR>2</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2</FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>STOP</FONT></TD>
+          <TD width="20%">&nbsp;</TD>
+          <TD width="16%">&nbsp;</TD>
+          <TD width="2%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="1%">&nbsp;</TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>1</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2</FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>SUB (HL)<BR>SUB 
+            n8<BR>SUB r8</FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>A<BR>A<BR>A</FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>8bit 
+            integer<BR>A, B, C, D, E, H, L</FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>1<BR>1<BR>1</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2<BR>1</FONT></TD>
+          <TD width="5%"><FONT face=Arial 
+        color=#ffffff>1<BR>2<BR>1</FONT></TD></TR>
+        <TR>
+          <TD width="30%"><FONT face=Arial color=#ffffff>SWAP (HL)<BR>SWAP 
+            r8</FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L</FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>A, B, C, D, 
+            E, H, L</FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>4<BR>2</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2</FONT></TD></TR>
+        <TR>
+          <TD align=middle width="4%" bgColor=#0000c0><FONT face=Arial 
+            color=#ffffff><BIG><BIG><BIG>X</BIG></BIG></BIG></FONT></TD>
+          <TD width="30%"><FONT face=Arial color=#ffffff>XOR (HL)<BR>XOR 
+            n8<BR>XOR r8</FONT></TD>
+          <TD width="20%"><FONT face=Arial color=#ffffff>A<BR>A<BR>A</FONT></TD>
+          <TD width="16%"><FONT face=Arial color=#ffffff>(HL)<BR>8bit 
+            integer<BR>A, B, C, D, E, H, L</FONT></TD>
+          <TD width="2%"><FONT face=Arial color=#ffffff>X<BR>X<BR>X</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0<BR>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0<BR>0</FONT></TD>
+          <TD width="1%"><FONT face=Arial color=#ffffff>0<BR>0<BR>0</FONT></TD>
+          <TD width="5%"><FONT face=Arial color=#ffffff>2<BR>2<BR>1</FONT></TD>
+          <TD width="5%"><FONT face=Arial 
+        color=#ffffff>1<BR>2<BR>1</FONT></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE><BR><!--*/GeoGuide/*-->
+<TABLE cellSpacing=0 cellPadding=0 border=0>
+  <TBODY>
+  <TR>
+    <TD><!--NEW4--><MAP name=geoguidelite><AREA shape=RECT alt=E-list 
+        coords=399,0,468,13 href="http://www.geocities.co.jp/elist/"><AREA 
+        shape=RECT alt=BBS coords=329,0,399,13 
+        href="http://www.geocities.co.jp/bbs2/"><AREA shape=RECT alt=Search 
+        coords=259,0,329,13 href="http://www.geocities.co.jp/search/"><AREA 
+        shape=RECT alt=Ranking coords=189,0,259,13 
+        href="http://www.geocities.co.jp/cgi-bin/geoguide/geoguide_rank"><AREA 
+        shape=RECT alt=Bookend coords=99,0,189,13 
+        href="http://www.geocities.co.jp/Bookend/"><AREA shape=RECT 
+        alt="Go to Top" coords=0,0,99,13 href="http://www.geocities.co.jp/"></MAP>
+      <TABLE height=13 cellSpacing=0 cellPadding=0 width=468 bgColor=#000066 
+      border=0>
+        <TBODY>
+        <TR>
+          <TD><IMG height=13 
+            src="Gameboy Opcodes and Timings_files/geoguide3_white.gif" 
+            width=468 useMap=#geoguidelite border=0></TD></TR></TBODY></TABLE></TD></TR>
+  <TR>
+    <TD><A 
+      href="http://rd.yahoo.co.jp/M=300088034.300568758.302239932.300110250/D=jp/S=2075574541:N/A=300390066/SIG=11pcr59bd/?http://bbpromo.yahoo.co.jp/promotion/hirosue/index.html" 
+      target=_top><IMG height=60 alt="" 
+      src="Gameboy Opcodes and Timings_files/a6udf000-a.gif" width=468 
+      border=0></A></TD></TR></TBODY></TABLE><!--*/GeoGuide/*--></BODY></HTML>
