@@ -6,7 +6,8 @@ namespace GBEmu {
 
 #define zfset(v) if ((v) == 0) pr->setflag(Z80::zf); else pr->resetflag(Z80::zf);
 	// defines operation x with pr as the processor
-#define OP(x) void x (Z80*pr)
+	// return value: machine time used
+#define OP(x) byte x (Z80*pr)
 
 	// 8 bit carry/halfcarry check
 	byte proc_add(Z80* pr, byte l, byte r) {
@@ -62,6 +63,7 @@ namespace GBEmu {
 	}
 
 	OP(NOP) {
+		return 4;
 	}
 
 #define forallregs(op) op(A)\
@@ -72,12 +74,19 @@ namespace GBEmu {
 	op(H)\
 	op(L)
 
-#define fetchtoreg(reg) OP(LD_ ##reg ##_n) { pr-> ##reg = pr->fetchb(); }
+#define forallregsexceptA(op) op(B)\
+	op(C)\
+	op(D)\
+	op(E)\
+	op(H)\
+	op(L)
+
+#define fetchtoreg(reg) OP(LD_ ##reg ##_n) { pr-> ##reg = pr->fetchb(); return 8; }
 
 	forallregs(fetchtoreg)
 
 		// define LD dst,src
-#define ldop(src,dst) OP(LD_ ##dst ##_ ##src) { pr->##dst = pr->##src; }
+#define ldop(src,dst) OP(LD_ ##dst ##_ ##src) { pr->##dst = pr->##src; return 4; }
 #define lds(dst) ldop(A,dst)\
 	ldop(B, dst)\
 	ldop(C, dst)\
@@ -89,64 +98,73 @@ namespace GBEmu {
 		forallregs(lds)
 
 		// load into (HL) operations
-#define hlld(src) OP(LD_HL_##src) {pr->setvalueatHL(pr->##src);}
+#define hlld(src) OP(LD_HL_##src) {pr->setvalueatHL(pr->##src); return 8; }
 		forallregs(hlld)
 
 		// load from (HL) operations
-#define ldhl(dst) OP(LD_ ##dst ##_HL) {pr->##dst = pr->getvaluepointedbyHL();}
+#define ldhl(dst) OP(LD_ ##dst ##_HL) {pr->##dst = pr->getvaluepointedbyHL(); return 8;}
 		forallregs(ldhl)
 
-		// 16 regs as pointers load
-		OP(LD_DE_A) {
+	// 16 regs as pointers load
+	OP(LD_DE_A) {
 		pr->mmu.writeb(pr->getDE(), pr->a);
-	}
-
-	OP(LD_nn_A) {
-		pr->mmu.writeb(pr->fetchw(), pr->a);
-	}
-
-	OP(LD_HL_n) {
-		pr->setvalueatHL(pr->fetchb());
-	}
-
-	OP(LD_A_BC) {
-		pr->a = pr->mmu.readb(pr->getBC());
+		return 8;
 	}
 
 	OP(LD_BC_A) {
 		pr->mmu.writeb(pr->getBC(), pr->a);
+		return 8;
+	}
+
+	OP(LD_HL_n) {
+		pr->setvalueatHL(pr->fetchb());
+		return 8;
+	}
+
+	OP(LD_nn_A) {
+		pr->mmu.writeb(pr->fetchw(), pr->a);
+		return 16;
+	}
+
+	OP(LD_A_BC) {
+		pr->a = pr->mmu.readb(pr->getBC()); return 8;
 	}
 
 	OP(LD_A_DE)	{
-		pr->a = pr->mmu.readb(pr->getDE());
+		pr->a = pr->mmu.readb(pr->getDE()); return 8;
 	}
 
 	OP(LD_A_nn) {
 		pr->a = pr->mmu.readb(pr->fetchw());
+		return 16;
 	}
 
 	// 0xFF00 + reg/byte write/read ops
 	OP(LD_A_PC) {
 		pr->a = pr->mmu.readb(tow(0xFF, pr->c));
+		return 8;
 	}
 
 	OP(LD_PC_A) {
 		pr->mmu.writeb(tow(0xFF, pr->c), pr->a);
+		return 8;
 	}
 
 	OP(LD_Pn_A) {
 		pr->mmu.writeb(tow(0xFF, pr->fetchb()), pr->a);
+		return 12;
 	}
 
 	OP(LD_A_Pn) {
 		pr->a = pr->mmu.readb(tow(0xFF, pr->fetchb()));
+		return 12;
 	}
 
 	// ALU
 #define addR(src,dst) OP(ADD_ ##dst ##_ ##src) { \
 		pr->##dst = proc_add(pr, pr->##src, pr->##dst);\
 		zfset (pr->##dst)\
-		pr->resetflag(Z80::opf);\
+		pr->resetflag(Z80::opf); return 4;\
 			}
 #define addR_A(src) addR(src,A)
 
@@ -156,18 +174,20 @@ namespace GBEmu {
 		pr->a = proc_add(pr, pr->a, pr->getvaluepointedbyHL());
 		zfset(pr->a)
 			pr->resetflag(Z80::opf);
+		return 8;
 	}
 
 	OP(ADD_A_n) {
 		pr->a = proc_add(pr, pr->a, pr->fetchb());
 		zfset(pr->a)
 		pr->resetflag(Z80::opf);
+		return 8;
 	}
 
 #define adcR(src) OP(ADC_A_##src) { \
 		pr->a = proc_add(pr, pr->##src + (pr->isflagset(Z80::cf) ? 1 : 0), pr->a);\
 		zfset (pr->a)\
-		pr->resetflag(Z80::opf);\
+		pr->resetflag(Z80::opf); return 4;\
 			}
 
 	forallregs(adcR)
@@ -175,14 +195,16 @@ namespace GBEmu {
 		OP(ADC_A_HL) {
 		pr->a = proc_add(pr, pr->a + (pr->isflagset(Z80::cf) ? 1 : 0), pr->getvaluepointedbyHL());
 		zfset(pr->a)
-			pr->resetflag(Z80::opf);
+		pr->resetflag(Z80::opf);
+		return 8;
 	}
 
 	OP(ADC_A_n) {
 		pr->a = proc_add(pr, (pr->isflagset(Z80::cf) ? 1 : 0), pr->a);
 		pr->a = proc_add(pr, pr->a, pr->fetchb());
 		zfset(pr->a)
-			pr->resetflag(Z80::opf);
+		pr->resetflag(Z80::opf);
+		return 8;
 	}
 
 	// sub by add using 2s complement
@@ -191,16 +213,16 @@ namespace GBEmu {
 		pr->a = proc_add(pr, pr->a, (byte)(~pr->##src+1)); \
 		if ((signed char)pr->##src > (signed char)oa) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);\
 		pr->setflag(Z80::opf);\
-		zfset (pr->a)\
+		zfset (pr->a); return 4;\
 			}
 
 	forallregs(sub)
 
-		OP(SUB_HL) {
+	OP(SUB_HL) {
 		pr->setflag(Z80::opf);
 		pr->a = ~proc_add(pr, pr->a, (byte)(~pr->getvaluepointedbyHL() + 1)) + 1;
 		if ((signed char)pr->getvaluepointedbyHL() > (signed char)pr->a) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);
-		zfset(pr->a)
+		zfset(pr->a); return 8;
 	}
 
 	OP(SUB_n) {
@@ -208,47 +230,51 @@ namespace GBEmu {
 		pr->setflag(Z80::opf);
 		pr->a = ~proc_add(pr, pr->a, (byte)(~inp + 1)) + 1;
 		if (inp > pr->a) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf); \
-			zfset(pr->a)
+			zfset(pr->a); return 8;
 	}
 
 #define and(src) OP(AND_##src) {\
 		pr->a &= pr->##src;\
 		zfset(pr->a)\
 		pr->setflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);\
-						}
+	return 4; }
 
 	forallregs(and)
 
 		OP(AND_HL) {
 		pr->a &= pr->getvaluepointedbyHL();
 		zfset(pr->a)
-			pr->setflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf); \
+		pr->setflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
+		return 8;
 	}
 
 	OP(AND_n) {
 		pr->a &= pr->fetchb();
 		zfset(pr->a)
-			pr->setflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
+		pr->setflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
+		return 8;
 	}
 
 #define or(src) OP(OR_##src) {\
 		pr->a |= pr->##src;\
 		zfset(pr->a)\
 		pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);\
-			}
+		return 4;	}
 
 	forallregs(or)
 
-		OP(OR_HL) {
+	OP(OR_HL) {
 		pr->a |= pr->getvaluepointedbyHL();
 		zfset(pr->a)
-			pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
+		pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
+		return 8;
 	}
 
 	OP(OR_n) {
 		pr->a |= pr->fetchb();
 		zfset(pr->a);
 		pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
+		return 8;
 	}
 
 
@@ -256,20 +282,22 @@ namespace GBEmu {
 		pr->a ^= pr->##src;\
 		zfset(pr->a)\
 		pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);\
-			}
+		return 4;	}
 
 	forallregs(xor)
 
 		OP(XOR_HL) {
 		pr->a ^= pr->getvaluepointedbyHL();
 		zfset(pr->a)
-			pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
+		pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
+		return 8;
 	}
 
 	OP(XOR_n) {
 		pr->a ^= pr->fetchb();
 		zfset(pr->a)
-			pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
+		pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
+		return 8;
 	}
 
 	// cp doesn't know whether the input is signed or unsigned, positive or negative, so just assume everything's unsigned all the time.
@@ -278,21 +306,23 @@ namespace GBEmu {
 			word tmp = (~proc_add(pr, pr->a, (byte)(~pr->##src+1))+1) & 0xFF;\
 			zfset(tmp)\
 			if (pr->##src > pr->a) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);\
-				}
+			return 4;	}
 
 	forallregs(cp)
 
-		OP(CP_HL) {
+	OP(CP_HL) {
 		word tmp = (~proc_add(pr, pr->a, (byte)(~pr->getvaluepointedbyHL() + 1)) + 1) & 0xFF;
 		zfset(tmp)
-			if (pr->getvaluepointedbyHL() > pr->a) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);
+		if (pr->getvaluepointedbyHL() > pr->a) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);
+		return 8;
 	}
 
 	OP(CP_n) {
 		byte inp = pr->fetchb();
 		word tmp = (~proc_add(pr, pr->a, (byte)(~inp + 1)) + 1) & 0xFF;
 		zfset(tmp)
-			if (inp > pr->a) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);
+		if (inp > pr->a) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);
+		return 8;
 	}
 
 #define inc(src) OP(INC_##src) {\
@@ -301,7 +331,7 @@ namespace GBEmu {
 			zfset(pr->##src)\
 			pr->resetflag(Z80::opf);\
 			if (carry) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);\
-				}
+			return 4;	}
 
 	forallregs(inc);
 
@@ -309,6 +339,7 @@ namespace GBEmu {
 		pr->setHL(pr->getvaluepointedbyHL() + 1);
 		zfset(pr->getHL());
 		pr->resetflag(Z80::opf);
+		return 12;
 	}
 
 #define dec(src) OP(DEC_##src) {\
@@ -317,7 +348,7 @@ namespace GBEmu {
 			zfset(pr->##src)\
 			pr->resetflag(Z80::opf);\
 			if (carry) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);\
-					}
+			return 4;		}
 
 	forallregs(dec);
 
@@ -325,6 +356,7 @@ namespace GBEmu {
 		pr->setHL(pr->getHL() - 1);
 		zfset(pr->getHL());
 		pr->resetflag(Z80::opf);
+		return 12;
 	}
 
 #define forall16bitregs(op) op(AF)\
@@ -335,6 +367,7 @@ namespace GBEmu {
 
 #define wordinto16reg(dst) OP(LD_ ##dst ##_nn) { \
 		pr->set ##dst (pr->fetchw()); \
+		return 12; \
 			}
 
 	forall16bitregs(wordinto16reg)
@@ -343,7 +376,7 @@ namespace GBEmu {
 #define add16(src,dst) OP(ADD_ ##dst ##_ ##src) {\
 			pr->set##dst (proc_add(pr, pr->get##src(), pr->get##dst()));\
 			pr->resetflag(Z80::opf);\
-						}
+				return 8;		}
 
 #define add16HL(src) add16(src,HL)
 #define add16SP(src) add16(src,SP)
@@ -354,33 +387,34 @@ namespace GBEmu {
 		// no flags affected yesss
 #define inc16(src) OP(INC_##src) {\
 		pr->set##src(pr->get##src() + 1);\
-				}
+			return 8;	}
 
 		forall16bitregs(inc16);
 
 #define dec16(src) OP(DEC_##src) {\
 		pr->set##src(pr->get##src() - 1);\
-			}
+			return 4; }
 
 	forall16bitregs(dec16);
 
 #define push16(src) OP(PUSH_##src) { \
-		pr->mmu.writew(pr->sp, pr->get##src()); pr->sp -= 2;\
+		pr->mmu.writew(pr->sp, pr->get##src()); pr->sp -= 2; return 16;\
 				}
 
 	forall16bitregs(push16)
 
 #define pop16(dst) OP(POP_##dst) { \
-		pr->set##dst (pr->mmu.readw(pr->sp+2)); pr->sp += 2;\
+		pr->set##dst (pr->mmu.readw(pr->sp+2)); pr->sp += 2; return 12;\
 			}
 
 		forall16bitregs(pop16)
 
 
-		OP(ADD_SP_n) {
+	OP(ADD_SP_n) {
 		pr->sp = proc_add(pr, pr->fetchb(), pr->sp);
 		pr->resetflag(Z80::zf);
 		pr->resetflag(Z80::opf);
+		return 16;
 	}
 
 	OP(LD_HL_SPn) {
@@ -389,37 +423,39 @@ namespace GBEmu {
 
 		word v = proc_add(pr, pr->fetchb(), pr->sp);
 		pr->setHL(v);
+		return 12;
 	}
 
 	OP(LD_nn_SP) {
 		pr->mmu.writew(pr->fetchw(), pr->sp);
+		return 20;
 	}
 
 	// LDD and LDI
 	OP(LDD_A_HL) {
 		LD_A_HL(pr);
-		DEC_HL(pr);
+		DEC_HL(pr); return 8;
 	}
 
 	OP(LDD_HL_A) {
 		LD_HL_A(pr);
-		DEC_HL(pr);
+		DEC_HL(pr); return 8;
 	}
 
 	OP(LDI_A_HL) {
 		LD_A_HL(pr);
-		INC_HL(pr);
+		INC_HL(pr); return 8;
 	}
 
 	OP(LDI_HL_A) {
 		LD_HL_A(pr);
-		INC_HL(pr);
+		INC_HL(pr); return 8;
 	}
 
 	OP(CPL) {
 		pr->a = ~pr->a;
 		pr->setflag(Z80::opf);
-		pr->setflag(Z80::hcf);
+		pr->setflag(Z80::hcf); return 4;
 	}
 
 	OP(CCF) {
@@ -430,17 +466,18 @@ namespace GBEmu {
 
 		pr->resetflag(Z80::opf);
 		pr->resetflag(Z80::hcf);
+		return 4;
 	}
 
 	OP(SCF) {
 		pr->setflag(Z80::cf);
 		pr->resetflag(Z80::opf);
-		pr->resetflag(Z80::hcf);
+		pr->resetflag(Z80::hcf); return 4;
 	}
 
 	OP(HALT) {
 		pr->halted = true;
-
+		return 4;
 		// disabled interrupts = skip next instruction. we'll go with the gbc behaviour.
 		// do nothing else.
 		// if (!pr->interrupts)
@@ -448,26 +485,26 @@ namespace GBEmu {
 
 	OP(STOP) {
 		pr->stopped = true;
-		pr->fetchb();
+		pr->fetchb(); return 4;
 	}
 
 	OP(EI) {
-		pr->interrupts = true;
+		pr->interrupts = true; return 4;
 	}
 
 	OP(DI) {
-		pr->interrupts = false;
+		pr->interrupts = false; return 4;
 	}
 
 	OP(LD_SP_HL)
 	{
-		pr->setSP(pr->getHL());
+		pr->setSP(pr->getHL()); return 8;
 	}
 
 	OP(opTableB) {
 		byte opc2 = pr->fetchb();
 		word op = 0xCB00 | opc2;
-		pr->runopcode(op);
+		pr->runopcode(op); return 0;
 	}
 
 	OP(CALL) {
@@ -475,30 +512,31 @@ namespace GBEmu {
 		word pushaddr = pr->pc;
 		pr->mmu.writew(pr->sp, pushaddr); pr->sp -= 2;
 		pr->pc = jmpaddr; // holy cow, subroutines
+		return 12;
 	}
 
 	OP(CALLNZ) {
 		if (!pr->isflagset(Z80::zf))
 			CALL(pr);
-		else pr->fetchw();
+		else pr->fetchw(); return 12;
 	}
 
 	OP(CALLZ) {
 		if (pr->isflagset(Z80::zf))
 			CALL(pr);
-		else pr->fetchw();
+		else pr->fetchw(); return 12;
 	}
 
 	OP(CALLNC) {
 		if (!pr->isflagset(Z80::cf))
 			CALL(pr);
-		else pr->fetchw();
+		else pr->fetchw(); return 12;
 	}
 
 	OP(CALLC) {
 		if (pr->isflagset(Z80::cf))
 			CALL(pr);
-		else pr->fetchw();
+		else pr->fetchw(); return 12;
 	}
 
 	void RSTgen(GBEmu::Z80 *pr, word jmpaddr) {
@@ -507,126 +545,128 @@ namespace GBEmu {
 	}
 
 	OP(RST00) {
-		RSTgen(pr, 0x00);
+		RSTgen(pr, 0x00); return 32;
 	}
 
 	OP(RST08) {
-		RSTgen(pr, 0x08);
+		RSTgen(pr, 0x08); return 32;
 	}
 
 	OP(RST10) {
-		RSTgen(pr, 0x10);
+		RSTgen(pr, 0x10); return 32;
 	}
 
 	OP(RST18) {
-		RSTgen(pr, 0x18);
+		RSTgen(pr, 0x18); return 32;
 	}
 
 	OP(RST20) {
-		RSTgen(pr, 0x20);
+		RSTgen(pr, 0x20); return 32;
 	}
 
 	OP(RST28) {
-		RSTgen(pr, 0x28);
+		RSTgen(pr, 0x28); return 32;
 	}
 
 	OP(RST30) {
-		RSTgen(pr, 0x30);
+		RSTgen(pr, 0x30); return 32;
 	}
 
 	OP(RST38) {
-		RSTgen(pr, 0x38);
+		RSTgen(pr, 0x38); return 32;
 	}
 
 	OP(RET) {
 		word jmpaddr = pr->mmu.readw(pr->sp + 2);
 		pr->sp += 2;
 		pr->pc = jmpaddr; // WOW we're BACK to the previous routine. So cool!
+		return 8;
 	}
 
 	OP(RETI) {
 		RET(pr);
-		EI(pr);
+		EI(pr); return 8;
 	}
 
 	OP(RETNZ) {
 		if (!pr->isflagset(Z80::zf))
 			RET(pr);
+		else pr->fetchw(); return 8;
 	}
 
 	OP(RETZ) {
 		if (pr->isflagset(Z80::zf))
-			RET(pr);
+			RET(pr); else pr->fetchw(); return 8;
 	}
 
 	OP(RETNC) {
 		if (!pr->isflagset(Z80::cf))
-			RET(pr);
+			RET(pr); else pr->fetchw(); return 8;
 	}
 
 	OP(RETC) {
 		if (pr->isflagset(Z80::cf))
-			RET(pr);
+			RET(pr); else pr->fetchw(); return 8;
 	}
 
 	OP(JP) {
 		word jmpaddr = pr->fetchw();
-		pr->pc = jmpaddr;
+		pr->pc = jmpaddr; return 12;
 	}
 
 	OP(JPNZ) {
 		if (!pr->isflagset(Z80::zf))
 			JP(pr);
-		else pr->fetchw();
+		else pr->fetchw(); return 12;
 	}
 	OP(JPZ) {
 		if (pr->isflagset(Z80::zf))
 			JP(pr);
-		else pr->fetchw();
+		else pr->fetchw(); return 12;
 	}
 	OP(JPNC) {
 		if (!pr->isflagset(Z80::cf))
 			JP(pr);
-		else pr->fetchw();
+		else pr->fetchw(); return 12;
 	}
 	OP(JPC) {
 		if (pr->isflagset(Z80::cf))
 			JP(pr);
-		else pr->fetchw();
+		else pr->fetchw(); return 12;
 	}
 
 	OP(JP_HL) {
 		word jmpaddr = pr->getvaluepointedbyHL();
-		pr->pc = jmpaddr;
+		pr->pc = jmpaddr; return 4;
 	}
 
 	OP(JR) {
 		signed char n = pr->fetchb();
-		pr->pc += n;
+		pr->pc += n; return 8;
 	}
 
 	OP(JRZ) {
 		if (pr->isflagset(Z80::zf))
 			JR(pr);
-		else pr->fetchb();
+		else pr->fetchb(); return 8;
 	}
 
 	OP(JRNZ) {
 		if (!pr->isflagset(Z80::zf))
 			JR(pr);
-		else pr->fetchb();
+		else pr->fetchb(); return 8;
 	}
 
 	OP(JRC) {
 		if (pr->isflagset(Z80::cf))
 			JR(pr);
-		else pr->fetchb();
+		else pr->fetchb(); return 8;
 	}
 
 	OP(JRNC) {
 		if (!pr->isflagset(Z80::cf))
 			JR(pr);
-		else pr->fetchb();
+		else pr->fetchb(); return 8;
 	}
 
 
@@ -676,32 +716,43 @@ namespace GBEmu {
 		pr->resetflag(Z80::hcf);
 	}
 
-#define rotops_reg(reg) OP(RLC##reg) {_RLC(pr->##reg, pr); } OP(RRC##reg) {_RRC(pr->##reg, pr);} OP(RL##reg) {_RL(pr->##reg, pr);} OP(RR##reg) {_RR(pr->##reg, pr);}
+#define rotops_reg(reg) OP(xRLC##reg) {_RLC(pr->##reg, pr); return 8;} \
+	OP(xRRC##reg) {_RRC(pr->##reg, pr); return 8;} \
+	OP(xRL##reg) {_RL(pr->##reg, pr); return 8;} \
+	OP(xRR##reg) {_RR(pr->##reg, pr); return 8;}
 
 	forallregs(rotops_reg)
 
-	OP(RLCHL){
+#undef rotops_reg
+#define rotops_reg(reg) OP(RLC##reg) {_RLC(pr->##reg, pr); return 4;} \
+	OP(RRC##reg) {_RRC(pr->##reg, pr); return 4;} \
+	OP(RL##reg) {_RL(pr->##reg, pr); return 4;} \
+	OP(RR##reg) {_RR(pr->##reg, pr); return 4;}
+
+	rotops_reg(A)
+
+	OP(xRLCHL){
 		byte w = pr->getvaluepointedbyHL();
 		_RLC(w, pr);
-		pr->mmu.writeb(pr->getHL(), w);
+		pr->mmu.writeb(pr->getHL(), w); return 16;
 	}
 
 	OP(RRCHL){
 		byte w = pr->getvaluepointedbyHL();
 		_RRC(w, pr);
-		pr->mmu.writeb(pr->getHL(), w);
+		pr->mmu.writeb(pr->getHL(), w); return 16;
 	}
 
 	OP(RLHL){
 		byte w = pr->getvaluepointedbyHL();
 		_RL(w, pr);
-		pr->mmu.writeb(pr->getHL(), w);
+		pr->mmu.writeb(pr->getHL(), w); return 16;
 	}
 
 	OP(RRHL){
 		byte w = pr->getvaluepointedbyHL();
 		_RR(w, pr);
-		pr->mmu.writeb(pr->getHL(), w);
+		pr->mmu.writeb(pr->getHL(), w); return 16;
 	}
 
 OP(ILLOP) {
@@ -722,40 +773,40 @@ void _zBIT(byte v, byte bit, Z80* pr)
 	pr->setflag(Z80::hcf);
 }
 
-#define bitop(n,dst) OP(BIT_ ##n ##_ ##dst) {_zBIT(pr->##dst, n, pr);}
+#define bitop(n,dst) OP(BIT_ ##n ##_ ##dst) {_zBIT(pr->##dst, n, pr); return 8;}
 #define bop(dst) bitop(0,dst) bitop(1,dst) bitop(2,dst) bitop(3,dst) bitop(4,dst) bitop(5,dst) bitop(6,dst) bitop(7,dst)
 forallregs(bop)
 
 OP(BIT_0_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 0, pr);
+	_zBIT(pr->getvaluepointedbyHL(), 0, pr); return 16;
 }
 
 OP(BIT_1_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 1, pr);
+	_zBIT(pr->getvaluepointedbyHL(), 1, pr); return 16;
 }
 
 OP(BIT_2_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 2, pr);
+	_zBIT(pr->getvaluepointedbyHL(), 2, pr); return 16;
 }
 
 OP(BIT_3_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 3, pr);
+	_zBIT(pr->getvaluepointedbyHL(), 3, pr); return 16;
 }
 
 OP(BIT_4_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 4, pr);
+	_zBIT(pr->getvaluepointedbyHL(), 4, pr); return 16;
 }
 
 OP(BIT_5_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 5, pr);
+	_zBIT(pr->getvaluepointedbyHL(), 5, pr); return 16;
 }
 
 OP(BIT_6_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 6, pr);
+	_zBIT(pr->getvaluepointedbyHL(), 6, pr); return 16;
 }
 
 OP(BIT_7_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 7, pr);
+	_zBIT(pr->getvaluepointedbyHL(), 7, pr); return 16;
 }
 
 Z80::z80op ops[256] =
@@ -812,7 +863,7 @@ Z80::z80op ops[256] =
 	{ INC_L, "INC L" },
 	{ DEC_L, "DEC L" },
 	{ LD_L_n, "LD L, n" },
-	{ CPL, "CP L" },
+	{ CPL, "CPL" },
 
 	// 0x30
 	{ JRNC, "JRNC" },
@@ -1052,40 +1103,40 @@ Z80::z80op ops[256] =
 Z80::z80op optable2[256] =
 {
 	// 00
-	{ RLCB, "RLCB" },
-	{ RLCC, "RLCC" },
-	{ RLCD, "RLCD" },
-	{ RLCE, "RLCE" },
-	{ RLCH, "RLCH" },
-	{ RLCL, "RLCL" },
-	{ RLCHL, "RLC (HL)" },
-	{ RLCA, "RLC A" },
-	{ RRCB, "RRCB" },
-	{ RRCC, "RRCC" },
-	{ RRCD, "RRCD" },
-	{ RRCE, "RRCE" },
-	{ RRCH, "RRCH" },
-	{ RRCL, "RRCL" },
+	{ xRLCB, "RLCB" },
+	{ xRLCC, "RLCC" },
+	{ xRLCD, "RLCD" },
+	{ xRLCE, "RLCE" },
+	{ xRLCH, "RLCH" },
+	{ xRLCL, "RLCL" },
+	{ xRLCHL, "RLC (HL)" },
+	{ xRLCA, "RLC A" },
+	{ xRRCB, "RRCB" },
+	{ xRRCC, "RRCC" },
+	{ xRRCD, "RRCD" },
+	{ xRRCE, "RRCE" },
+	{ xRRCH, "RRCH" },
+	{ xRRCL, "RRCL" },
 	{ RRCHL, "RRC (HL)" },
-	{ RRCA, "RRC A" },
+	{ xRRCA, "RRC A" },
 
 	// 10
-	{ RLB, "RLB" },
-	{ RLC, "RLC" },
-	{ RLD, "RLD" },
-	{ RLE, "RLE" },
-	{ RLH, "RLH" },
-	{ RLL, "RLL" },
+	{ xRLB, "RLB" },
+	{ xRLC, "RLC" },
+	{ xRLD, "RLD" },
+	{ xRLE, "RLE" },
+	{ xRLH, "RLH" },
+	{ xRLL, "RLL" },
 	{ RLHL, "RL (HL)" },
-	{ RLA, "RL A" },
-	{ RRB, "RRB" },
-	{ RRC, "RRC" },
-	{ RRD, "RRD" },
-	{ RRE, "RRE" },
-	{ RRH, "RRH" },
-	{ RRL, "RRL" },
+	{ xRLA, "RL A" },
+	{ xRRB, "RRB" },
+	{ xRRC, "RRC" },
+	{ xRRD, "RRD" },
+	{ xRRE, "RRE" },
+	{ xRRH, "RRH" },
+	{ xRRL, "RRL" },
 	{ RRHL, "RR (HL)" },
-	{ RRA, "RR A" },
+	{ xRRA, "RR A" },
 
 	// 20
 	{ ILLOP, "nop" },

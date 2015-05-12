@@ -11,7 +11,7 @@ namespace GBEmu {
 	{
 	public:
 		struct z80op {
-			void(*op)(Z80*);
+			byte (*op)(Z80*);
 			char desc[16];
 		};
 
@@ -55,7 +55,22 @@ namespace GBEmu {
 		word getHL();
 		word getSP(); // for completeness
 
-		void runinterrupts();
+		enum interrupt_t
+		{
+			int_vblank,
+			int_lcdstat,
+			int_timer,
+			int_serial,
+			int_joypad
+		};
+
+		// run an interrupt request
+		void runinterrupt(interrupt_t intr);
+
+		void callint(word addr);
+
+		// actually execute interrupts
+		void executeinterrupts();
 
 		// program counter
 		word prevpc;
@@ -82,12 +97,11 @@ namespace GBEmu {
 		// bios is running
 		bool biosRunning;
 
+		// the point of this structure is to use the accomulation of cycles to know
+		// how long to wait.
 		struct clock_t {
 			// clock, in machine cycles.
 			uint32_t machine;
-
-			// clock in clock cycles.
-			uint32_t clock;
 		} clock;
 
 		// assume op & 0xFF00 is the high part, and op & 0xFF is the low part. 

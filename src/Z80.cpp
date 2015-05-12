@@ -134,9 +134,62 @@ namespace GBEmu {
 		return rt;
 	}
 
-	void Z80::runinterrupts()
+	void Z80::runinterrupt(interrupt_t intr)
 	{
+		bool interruptRan = false;
+		// addresses 0x40, 0x48, 0x50, 0x58 and 0x60 are interrupt addresses.
 
+		byte interrupts = mmu.readb(0xFF0F);
+		interrupts |= 1 << intr;
+		mmu.writeb(0xFF0F, interrupts);
+	}
+
+	void Z80::callint(word addr)
+	{
+		mmu.writew(sp, pc);
+		sp -= 2;
+		pc = addr;
+
+		interrupts = false;
+		clock.machine += 5;
+	}
+
+	void Z80::executeinterrupts()
+	{
+		if (!interrupts) // they're disabled. don't process them.
+			return;
+
+		byte enabledinterrupts = mmu.readb(0xFFFF);
+		byte requests = mmu.readb(0xFF0F);
+		if (requests & (1 << int_vblank) && enabledinterrupts & (1 << int_vblank))
+		{
+			callint(0x40);
+			return;
+		}
+
+		if (requests & (1 << int_lcdstat) && enabledinterrupts & (1 << int_lcdstat))
+		{
+			callint(0x48);
+			return;
+		}
+
+		if (requests & (1 << int_timer) && enabledinterrupts & (1 << int_timer))
+		{
+			callint(0x50);
+			return;
+		}
+
+		if (requests & (1 << int_serial) && enabledinterrupts & (1 << int_serial))
+		{
+			callint(0x58);
+			return;
+		}
+
+		if (requests & (1 << int_joypad) && enabledinterrupts & (1 << int_joypad))
+		{
+			callint(0x60);
+			return;
+		}
 	}
 
 	void Z80::runopfromname(std::string op)
@@ -155,6 +208,8 @@ namespace GBEmu {
 
 	bool Z80::runopcode(word opc)
 	{
+		if (halted) return false; // we're awaiting an interrupt
+
 		if ((opc & 0xFF00) == 0)
 		{
 			if (ops[opc].op == ILLOP)
@@ -163,7 +218,7 @@ namespace GBEmu {
 				return false;
 			}
 
-			ops[opc].op(this);
+			clock.machine += ops[opc].op(this);
 
 			std::stringstream ss;
 			ss << "0x" << std::hex << prevpc << ": " << ops[opc].desc << std::endl;
@@ -188,6 +243,8 @@ namespace GBEmu {
 			}
 		}
 
+		// call outside the fetch/execute cycle. that way we've got finer-grained control over the timing.
+		// executeinterrupts();
 		return true;
 	}
 

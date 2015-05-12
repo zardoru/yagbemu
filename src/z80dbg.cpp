@@ -3,7 +3,6 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <bitset>
 #include <csignal>
 
 GBEmu::Z80 cpu;
@@ -50,13 +49,12 @@ int main()
 	std::cin >> std::hex;
 	std::cout << std::right << std::setfill('0');
 
-	std::cout << "yagbemu's gbzb80 debugger interface go.\n";
+	std::cout << "yagbemu's gbz80 debugger interface start.\n";
 	printregs(cpu); print16regs(cpu);
-
-	signal(SIGINT, sigbreak);
 
 	while (true)
 	{
+		signal(SIGINT, sigbreak);
 		std::cin >> cmd;
 		if (cmd == "op")
 		{
@@ -137,9 +135,7 @@ int main()
 		} else if (cmd == "c" || cmd == "continue")
 		{
 			locked = true;
-			while (cpu.step()) {
-				std::cout << "\r" << std::hex << cpu.prevpc;
-			}
+			while (cpu.step()) {}
 			locked = false;
 		} else if (cmd == "q")
 			return 0;

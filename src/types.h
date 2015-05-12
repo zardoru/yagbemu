@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <bitset>
 #include <memory>
 #include <vector>
 
@@ -25,4 +26,8 @@ template <typename T> T lowern(T v, byte n) {
 
 template <typename T> T uppern(T v, byte n) {
 	return lowern((v >> (sizeof(v) * 8 - n)), n);
+}
+
+template <typename T> word wbits(T b) {
+	return ((word)std::bitset<16>(b).to_ulong());
 }

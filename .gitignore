@@ -45,3 +45,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 *.obj
+*.sdf
+gbemu.opensdf
+gbemu.sdf

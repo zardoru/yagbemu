@@ -27,16 +27,28 @@ namespace GBEmu {
 
 		byte rambanks;
 		ROM* rom;
-		word swappedrambank;
+		word swappedrambank, swappedrombank;
 		size_t romsize;
 
+		void doRomBanking(byte v);
+		void doMBCstuff(word addr, byte val);
+
 		bool inbios;
+		bool MBC1, MBC2;
+		bool rambankEnabled;
+
+		enum {
+			rombanking, // 8kB ram, 2mB ROM
+			rambanking // 32kB ram, 512kB Rom
+		} memoryModel;
 	public:
 		MMU();
+
+		void setMBC1(bool nv);
 		void writeb(word addr, byte val);
 		void writew(word addr, word val);
-		byte readb(word addr);
-		word readw(word addr);
+		byte readb(word addr) const;
+		word readw(word addr) const;
 
 		void assignrom(ROM* rom);
 		void cleanBIOS();

@@ -1,5 +1,6 @@
 #include "MMU.h"
 
+// the mmu in general does not assume low-endianness from the target machine.
 namespace GBEmu {
 
 	unsigned char GBbootstrap[256] = {
@@ -33,11 +34,79 @@ namespace GBEmu {
 		rom = nullptr;
 
 		inbios = true;
+		MBC1 = false;
+		MBC2 = false;
+		rambankEnabled = 0;
+
 		// zero the memory, then load the bootstrap program in 0x00.
 		memset(ram.memory, 0, 0x10000);
-		swappedrambank = 1;
+		swappedrambank = 0;
+		swappedrombank = 1;
 	}
+
+	void MMU::setMBC1(bool nv)
+	{
+		MBC1 = nv;
+	}
+
+	void MMU::doRomBanking(byte val)
+	{
+		// 011 111 = 037 or 1F 0001 1111
+		word mask = wbits("00011111");
+		swappedrombank &= ~mask;
+		if (!val)
+			swappedrombank |= 1;
+		else
+		{
+			// lower 5 bits of the rom bank are set here 
+			swappedrombank |= val & mask;
+		}
+	}
+
 	// the byte versions handle the details of banking and whatever.
+
+	void MMU::doMBCstuff(word addr, byte val)
+	{
+		if (MBC1)
+		{
+			if (addr >= 0x2000 && addr < 0x4000) // okay then, we're doing banking.
+			{ // ROM banking
+				doRomBanking(val);
+				return;
+			}
+			else if (addr >= 0x6000 && addr < 8000)
+			{ // ROM/RAM mode select
+				if (val % 1)
+					memoryModel = rambanking;
+				else
+					memoryModel = rombanking;
+				return;
+			}
+			else if (addr < 0x2000)
+			{ // "Practically any value with 0Ah in the lower 4 bits enables RAM, and any other value disables RAM" 
+				if (val & 0xA)
+					rambankEnabled = true;
+				else rambankEnabled = false;
+				return;
+			}
+			else if (addr >= 0x4000 && addr < 0x6000)
+			{ // RAM Bank Number - or - Upper Bits of ROM Bank Number
+				word mask = wbits("01100000");
+
+				if (memoryModel == rambanking)
+				{ // set ram bank
+					swappedrambank = addr & 3; // last 2 bits
+				}
+				else if (memoryModel == rombanking)
+				{ // set high bits of rom bank
+					swappedrombank &= ~mask;
+					swappedrombank |= (addr & 3) << 5;
+				}
+
+				return;
+			}
+		}
+	}
 
 	void MMU::writeb(word addr, byte val)
 	{
@@ -51,6 +120,7 @@ namespace GBEmu {
 			return;
 		}
 		else if (addr < 0x8000) { // READ-ONLY
+			doMBCstuff(addr, val);
 			return;
 		}
 
@@ -63,21 +133,26 @@ namespace GBEmu {
 		writeb(addr+1, byte((val & 0xFF00) >> 8));
 	}
 
-	byte MMU::readb(word addr)
+	byte MMU::readb(word addr) const
 	{
 		if (addr < 0x8000)
 		{
 			if (inbios && addr < 0x100)
 				return GBbootstrap[addr];
 			else if (rom)
-				return rom->getaddrvalue(addr);
+			{
+				if (!rom->ismbc1() || addr < 0x4000)
+					return rom->getaddrvalue(addr);
+				else // 0x4000 -> 0x7FFF, do rom banking
+					return rom->readBank(swappedrombank, addr - 0x4000);
+			}
 			else
 				return 0;
 		} else
 			return ram.memory[addr];
 	}
 
-	word MMU::readw(word addr)
+	word MMU::readw(word addr) const
 	{
 		byte low = readb(addr);
 		byte high = readb(addr + 1);

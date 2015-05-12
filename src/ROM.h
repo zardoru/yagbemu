@@ -17,12 +17,15 @@ namespace GBEmu {
 		byte getramsize();
 		// returns size of rom banks. 
 		size_t getbanksize();
-		byte getbankcount();
+		byte getrombankcount();
+		byte getrambankcount();
 
+		bool getDestination();
+		bool ismbc1();
 		bool ismbc2();
 
 		// dst needs to be large enough.
-		void copybank(int bank, byte* dst);
+		byte readBank(byte bank, word relativeAddr);
 
 		byte getaddrvalue(word addr);
 

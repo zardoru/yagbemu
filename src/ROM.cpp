@@ -47,6 +47,11 @@ namespace GBEmu {
 		}
 	}
 
+	bool ROM::ismbc1()
+	{
+		return mbc1;
+	}
+
 	byte ROM::getaddrvalue(word addr)
 	{
 		if (addr < bin.size())
@@ -67,9 +72,56 @@ namespace GBEmu {
 		return mbc2;
 	}
 
-	byte ROM::getbankcount()
+	// return the number of ROM banks
+	byte ROM::getrombankcount()
 	{
-		return bin[0x148];
+		switch (bin[0x148])
+		{
+		case 0:
+			return 2;
+		case 1:
+			return 4;
+		case 2:
+			return 8;
+		case 3:
+			return 16;
+		case 4:
+			return 32;
+		case 5:
+			return 64;
+		case 6:
+			return 128;
+		case 0x52:
+			return 72;
+		case 0x53:
+			return 80;
+		case 0x54:
+			return 96;
+		}
+
+		return 0;
+	}
+
+	byte ROM::getrambankcount()
+	{
+		switch (bin[0x149])
+		{
+		case 0:
+			return 0;
+		case 1:
+			return 1;
+		case 2:
+			return 1;
+		case 3:
+			return 4;
+		case 4:
+			return 16;
+		}
+	}
+
+	byte ROM::readBank(byte Bank, word relativeAddr)
+	{
+		return 0; // stub
 	}
 
 	void ROM::copy(int32_t start, size_t size, byte* dst)
