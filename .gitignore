@@ -20,6 +20,16 @@ $RECYCLE.BIN/
 # compile dirs
 Debug/
 gbemu/Debug
+Release/
+gbemu/Release
+ext/
+.vs/
+
+# out files
+dis.txt
+*.gb
+*.dll
+
 # =========================
 # Operating System Files
 # =========================

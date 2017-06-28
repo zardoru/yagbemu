@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <sstream>
-#include <map>
 
 // current issues: half carry may not be calculated correctly for the most part. it seems a lot of people skip it, anyway.
 // unimplemented opcodes.
@@ -42,7 +41,7 @@ namespace GBEmu {
 	{
 		byte low = fetchb();
 		byte high = fetchb();
-		return tow(high, low);
+		return packWord(high, low);
 	}
 
 	byte Z80::fetchb()
@@ -116,11 +115,11 @@ namespace GBEmu {
 		return sp;
 	}
 
-	bool Z80::step()
+	byte Z80::step()
 	{
 		prevpc = pc;
 		byte opc = fetchb();
-		bool rt = runopcode(opc);
+		auto rt = runopcode(opc);
 
 		// done with the bios!
 		if (biosRunning && pc == 0x100) {
@@ -128,13 +127,13 @@ namespace GBEmu {
 			mmu.cleanBIOS();
 		}
 
-		rt = rt && !breaknextstep;
+		// rt = rt && !breaknextstep;
 
 		if (breaknextstep) breaknextstep = false;
 		return rt;
 	}
 
-	void Z80::runinterrupt(interrupt_t intr)
+	void Z80::runInterrupt(interrupt_t intr)
 	{
 		bool interruptRan = false;
 		// addresses 0x40, 0x48, 0x50, 0x58 and 0x60 are interrupt addresses.
@@ -204,30 +203,42 @@ namespace GBEmu {
 		}
 	}
 
-	std::map<word, std::string> opd;
-
-	bool Z80::runopcode(word opc)
+	byte Z80::runopcode(word opc)
 	{
-		if (halted) return false; // we're awaiting an interrupt
+		if (halted) return 0; // we're awaiting an interrupt
 
 		if ((opc & 0xFF00) == 0)
 		{
 			if (ops[opc].op == ILLOP)
 			{
 				std::cout << "illegal instruction " << std::hex << opc << std::endl;
-				return false;
+				return 0;
 			}
-
-			clock.machine += ops[opc].op(this);
-
-			std::stringstream ss;
-			ss << "0x" << std::hex << prevpc << ": " << ops[opc].desc << std::endl;
-			opd[pc] = ss.str();
 
 			if (dump && opc != 0xCB && opc != 0) // skip nops
 			{
-				std::clog << ss.str();
+				std::string desc = ops[opc].desc;
+				int i;
+				if ((i = desc.find_first_of("n")) != std::string::npos) {
+					char buf[8];
+					sprintf(buf, "$%02x", mmu.readb(pc));
+					desc.replace(i, 1, buf);
+				}
+
+				if ((i = desc.find_first_of("w")) != std::string::npos) {
+					char buf[8];
+					sprintf(buf, "$%04x", mmu.readw(pc));
+					desc.replace(i, 1, buf);
+				}
+
+				disassembly[pc] = desc;
+
+				printf("%04x: %s\n", pc, desc.c_str());
 			}
+
+			byte c = ops[opc].op(this);
+			clock.machine += c;
+			return c;
 		}
 		else {
 			if (optable2[opc & 0xFF].op == ILLOP || optable2[opc & 0xFF].op == NULL)
@@ -236,21 +247,28 @@ namespace GBEmu {
 				return false;
 			}
 
-			optable2[opc & 0xFF].op(this);
+			byte c = optable2[opc & 0xFF].op(this);
 			if (dump) 
 			{
 				std::clog << "0x" << std::hex << prevpc << ": " << optable2[opc & 0xFF].desc << std::endl;
 			}
+			return c;
 		}
 
 		// call outside the fetch/execute cycle. that way we've got finer-grained control over the timing.
 		// executeinterrupts();
-		return true;
+		return 0;
+	}
+
+	double Z80::msPerCycle()
+	{
+		constexpr auto frequency = 4.194304 * 1000000; // regular GB frequency
+		return 1. / frequency * 1000.0;
 	}
 
 	void Z80::dumpins()
 	{
-		for (auto v : opd)
+		for (auto v : disassembly)
 		{
 			std::clog << v.second;
 		}

@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "MMU.h"
+#include <map>
 
 namespace GBEmu {
 
@@ -65,7 +66,7 @@ namespace GBEmu {
 		};
 
 		// run an interrupt request
-		void runinterrupt(interrupt_t intr);
+		void runInterrupt(interrupt_t intr);
 
 		void callint(word addr);
 
@@ -108,20 +109,31 @@ namespace GBEmu {
 		// in general, if (0xFF00 & op) >> 2 == 0xCB use the extended instruction set
 		// otherwise use the regular 256 instructions from the gameboy.
 
-		bool runopcode(uint16_t op);
+		byte runopcode(uint16_t op);
 		void runopfromname(std::string op);
+
+		template <class T>
+		void zfset(T v) {
+			if (v == 0) 
+				setflag(Z80::zf); 
+			else 
+				resetflag(Z80::zf);
+		}
 
 		byte fetchb();
 		word fetchw();
 		byte getvaluepointedbyHL();
 		void setvalueatHL(byte v);
 
-		bool step();
+		byte step();
 
 		// system components
 		MMU mmu;
 
+		std::map<word, std::string> disassembly;
 		Z80();
+
+		double msPerCycle();
 		void dumpins();
 	};
 }

@@ -44,6 +44,24 @@ namespace GBEmu {
 		swappedrombank = 1;
 	}
 
+	void MMU::addReadHook(word addr, ReadHook *func)
+	{
+		if (ReadHooks.find(addr) == ReadHooks.end()) {
+			ReadHooks[addr] = vector<ReadHook*>();
+		}
+
+		ReadHooks[addr].push_back(func);
+	}
+
+	void MMU::addWriteHook(word addr, WriteHook *func)
+	{
+		if (WriteHooks.find(addr) != WriteHooks.end()) {
+			WriteHooks[addr] = vector<WriteHook*>();
+		}
+
+		WriteHooks[addr].push_back(func);
+	}
+
 	void MMU::setMBC1(bool nv)
 	{
 		MBC1 = nv;
@@ -110,9 +128,19 @@ namespace GBEmu {
 
 	void MMU::writeb(word addr, byte val)
 	{
+		if (WriteHooks.find(addr) != WriteHooks.end()) {
+			for (auto f : WriteHooks.at(addr)) {
+				(*f)(addr, val);
+				return;
+			}
+		}
+
 		if (addr >= 0xC000 && addr < 0xFE00) // internal ram
 		{
-			addr -= 0xC000;
+			if (addr < 0xE000) // writing to internal ram
+				addr -= 0xC000;
+			else // writing to echo ram
+				addr -= 0xE000;
 
 			// echo values
 			ram.internalram8[addr] = val;
@@ -122,6 +150,13 @@ namespace GBEmu {
 		else if (addr < 0x8000) { // READ-ONLY
 			doMBCstuff(addr, val);
 			return;
+		}
+
+		/* 
+		
+		*/
+		if (addr >= 0x9800 && addr <= 0x9FFF && val != 0) {
+			//__debugbreak();
 		}
 
 		ram.memory[addr] = val;
@@ -156,7 +191,28 @@ namespace GBEmu {
 	{
 		byte low = readb(addr);
 		byte high = readb(addr + 1);
-		return tow(high, low);
+		return packWord(high, low);
+	}
+
+	byte MMU::rawreadb(word addr) const
+	{
+		return ram.memory[addr];
+	}
+
+	word MMU::rawreadw(word addr) const
+	{
+		return packWord(ram.memory[addr], ram.memory[addr+1]);
+	}
+
+	void MMU::rawwriteb(word addr, byte b)
+	{
+		ram.memory[addr] = b;
+	}
+
+	void MMU::rawwritew(word addr, word w)
+	{
+		rawwriteb(addr, byte(w & 0xFF));
+		rawwriteb(addr + 1, byte(w >> 8));
 	}
 	
 	void MMU::assignrom(ROM* rom)

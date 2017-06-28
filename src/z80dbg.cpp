@@ -1,12 +1,15 @@
 #include "Z80.h"
 #include "ROM.h"
+#include "Video.h"
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <string>
 #include <csignal>
 
 GBEmu::Z80 cpu;
 GBEmu::ROM rom;
+GBEmu::Video vid(&cpu.mmu);
 bool locked = false;
 
 void sigbreak(int sig)
@@ -42,18 +45,22 @@ void print16regs(GBEmu::Z80 &cpu)
 		"SP = $" << std::setw(4) << (int)cpu.getSP() << std::endl;
 }
 
-int main()
+/*int main()
 {
 	int op;
 	std::string cmd;
-	std::cin >> std::hex;
 	std::cout << std::right << std::setfill('0');
 
 	std::cout << "yagbemu's gbz80 debugger interface start.\n";
 	printregs(cpu); print16regs(cpu);
 
+	std::cin.unsetf(std::ios::dec);
+	std::cin.unsetf(std::ios::hex);
+	std::cin.unsetf(std::ios::oct);
+
 	while (true)
 	{
+		using std::hex;
 		signal(SIGINT, sigbreak);
 		std::cin >> cmd;
 		if (cmd == "op")
@@ -70,11 +77,13 @@ int main()
 		}
 		else if (cmd == "step" || cmd == "s")
 		{
-			cpu.step(); 
+			vid.updateTimer(cpu.step(), &cpu); 
 		}
 		else if (cmd == "stepandinfo" || cmd == "si")
 		{
-			cpu.step(); printregs(cpu); print16regs(cpu);
+			vid.updateTimer(cpu.step(), &cpu); 
+			
+			printregs(cpu); print16regs(cpu);
 		}
 		else if (cmd == "r" || cmd == "reg" || cmd == "regs")
 		{
@@ -107,11 +116,13 @@ int main()
 		}
 		else if (cmd == "printw") {
 			short addr; std::cin >> addr;
-			std::cout << cpu.mmu.readw(addr);
+			std::cout << cpu.mmu.readw(addr) << std::endl;
 		}
 		else if (cmd == "printb") {
 			short addr; std::cin >> addr;
-			std::cout << (int)cpu.mmu.readb(addr);
+			std::cin.clear();
+			std::cin.ignore();
+			std::cout << (int)cpu.mmu.readb(addr) << std::endl;
 		}
 		else if (cmd == "setb") {
 			short addr; std::cin >> addr;
@@ -135,7 +146,8 @@ int main()
 		} else if (cmd == "c" || cmd == "continue")
 		{
 			locked = true;
-			while (cpu.step()) {}
+			byte c = 0;
+			while (c = cpu.step()) { vid.updateTimer(c, &cpu); }
 			locked = false;
 		} else if (cmd == "q")
 			return 0;
@@ -145,20 +157,30 @@ int main()
 			cpu.dump = false;
 		else if (cmd == "trace")
 			cpu.dumpins();
-		else if (cmd == "breakpoint")
+		else if (cmd == "breakpoint" || cmd == "b")
 		{
 			int bp; std::cin >> bp;
 			
 			locked = true;
 			while (cpu.pc != bp)
 			{
-				if (!cpu.step()) break;
+				byte c;
+				if (! (c = cpu.step()) ) break;
+				vid.updateTimer(c, &cpu);
 			}
 			locked = false;
 
 			if (bp == cpu.pc) std::cout << "breakpoint hit" << std::endl;
 		}
-		else std::cout << "??\n";
+		else if (cmd == "disassemble")
+		{
+			std::cout << "writing to dis.txt\n";
+			std::fstream out("dis.txt", std::ios::out);
+			for (auto v : cpu.disassembly) {
+				out << v.second << "\n";
+			}
+		}
+		else std::cout << "unknown command\n";
 		
 	}
-}
+}*/

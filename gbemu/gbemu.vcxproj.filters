@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Source-SFML">
+      <UniqueIdentifier>{4d183982-85c9-4bdd-a3a1-b4b1de7afc51}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Z80.h">
@@ -30,6 +33,9 @@
     <ClInclude Include="..\src\z80op.inl.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\Video.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\MMU.cpp">
@@ -43,6 +49,12 @@
     </ClCompile>
     <ClCompile Include="..\src\ROM.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Video.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src-sfml\sfml-main.cpp">
+      <Filter>Source Files\Source-SFML</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

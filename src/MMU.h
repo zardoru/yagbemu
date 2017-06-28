@@ -4,7 +4,15 @@
 #pragma once
 
 namespace GBEmu {
+	
+	typedef function<byte(word addr)> ReadHook;
+	typedef function<void(word addr, byte val)> WriteHook;
+
 	class MMU {
+	private:
+		map<word, vector<ReadHook*>> ReadHooks;
+		map<word, vector<WriteHook*>> WriteHooks;
+
 		union {
 			struct {
 				byte rombank0[kB(16)]; // ROM bank 0 0x0000 -> 0x3FFF
@@ -42,13 +50,23 @@ namespace GBEmu {
 			rambanking // 32kB ram, 512kB Rom
 		} memoryModel;
 	public:
+
 		MMU();
+
+		void addReadHook(word addr, ReadHook* func);
+		void addWriteHook(word addr, WriteHook* func);
 
 		void setMBC1(bool nv);
 		void writeb(word addr, byte val);
 		void writew(word addr, word val);
 		byte readb(word addr) const;
 		word readw(word addr) const;
+
+		// straight up from our structure
+		byte rawreadb(word addr) const;
+		word rawreadw(word addr) const;
+		void rawwriteb(word addr, byte b);
+		void rawwritew(word addr, word w);
 
 		void assignrom(ROM* rom);
 		void cleanBIOS();

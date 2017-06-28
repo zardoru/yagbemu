@@ -4,7 +4,6 @@
 
 namespace GBEmu {
 
-#define zfset(v) if ((v) == 0) pr->setflag(Z80::zf); else pr->resetflag(Z80::zf);
 	// defines operation x with pr as the processor
 	// return value: machine time used
 #define OP(x) byte x (Z80*pr)
@@ -141,29 +140,38 @@ namespace GBEmu {
 
 	// 0xFF00 + reg/byte write/read ops
 	OP(LD_A_PC) {
-		pr->a = pr->mmu.readb(tow(0xFF, pr->c));
+		pr->a = pr->mmu.readb(packWord(0xFF, pr->c));
 		return 8;
 	}
 
 	OP(LD_PC_A) {
-		pr->mmu.writeb(tow(0xFF, pr->c), pr->a);
+		pr->mmu.writeb(packWord(0xFF, pr->c), pr->a);
 		return 8;
 	}
 
 	OP(LD_Pn_A) {
-		pr->mmu.writeb(tow(0xFF, pr->fetchb()), pr->a);
+		pr->mmu.writeb(packWord(0xFF, pr->fetchb()), pr->a);
 		return 12;
 	}
 
 	OP(LD_A_Pn) {
-		pr->a = pr->mmu.readb(tow(0xFF, pr->fetchb()));
+		pr->a = pr->mmu.readb(packWord(0xFF, pr->fetchb()));
 		return 12;
 	}
+
+template<byte Z80::*ptr>
+OP(SWAP) {
+	byte val = (*pr).*ptr;
+	byte nibbleL = (val & 0x0F) << 4;
+	byte nibbleR = (val & 0xF0) >> 4;
+	(*pr).*ptr = nibbleR | nibbleL;
+	return 8;
+}
 
 	// ALU
 #define addR(src,dst) OP(ADD_ ##dst ##_ ##src) { \
 		pr->##dst = proc_add(pr, pr->##src, pr->##dst);\
-		zfset (pr->##dst)\
+		pr->zfset (pr->##dst);\
 		pr->resetflag(Z80::opf); return 4;\
 			}
 #define addR_A(src) addR(src,A)
@@ -172,29 +180,29 @@ namespace GBEmu {
 
 		OP(ADD_A_HL) {
 		pr->a = proc_add(pr, pr->a, pr->getvaluepointedbyHL());
-		zfset(pr->a)
+		pr->zfset(pr->a);
 			pr->resetflag(Z80::opf);
 		return 8;
 	}
 
 	OP(ADD_A_n) {
 		pr->a = proc_add(pr, pr->a, pr->fetchb());
-		zfset(pr->a)
+		pr->zfset(pr->a);
 		pr->resetflag(Z80::opf);
 		return 8;
 	}
 
 #define adcR(src) OP(ADC_A_##src) { \
 		pr->a = proc_add(pr, pr->##src + (pr->isflagset(Z80::cf) ? 1 : 0), pr->a);\
-		zfset (pr->a)\
+		pr->zfset (pr->a);\
 		pr->resetflag(Z80::opf); return 4;\
 			}
 
 	forallregs(adcR)
 
-		OP(ADC_A_HL) {
+	OP(ADC_A_HL) {
 		pr->a = proc_add(pr, pr->a + (pr->isflagset(Z80::cf) ? 1 : 0), pr->getvaluepointedbyHL());
-		zfset(pr->a)
+		pr->zfset(pr->a);
 		pr->resetflag(Z80::opf);
 		return 8;
 	}
@@ -202,7 +210,7 @@ namespace GBEmu {
 	OP(ADC_A_n) {
 		pr->a = proc_add(pr, (pr->isflagset(Z80::cf) ? 1 : 0), pr->a);
 		pr->a = proc_add(pr, pr->a, pr->fetchb());
-		zfset(pr->a)
+		pr->zfset(pr->a);
 		pr->resetflag(Z80::opf);
 		return 8;
 	}
@@ -213,7 +221,7 @@ namespace GBEmu {
 		pr->a = proc_add(pr, pr->a, (byte)(~pr->##src+1)); \
 		if ((signed char)pr->##src > (signed char)oa) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);\
 		pr->setflag(Z80::opf);\
-		zfset (pr->a); return 4;\
+		pr->zfset (pr->a); return 4;\
 			}
 
 	forallregs(sub)
@@ -222,7 +230,7 @@ namespace GBEmu {
 		pr->setflag(Z80::opf);
 		pr->a = ~proc_add(pr, pr->a, (byte)(~pr->getvaluepointedbyHL() + 1)) + 1;
 		if ((signed char)pr->getvaluepointedbyHL() > (signed char)pr->a) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);
-		zfset(pr->a); return 8;
+		pr->zfset(pr->a); return 8;
 	}
 
 	OP(SUB_n) {
@@ -230,34 +238,34 @@ namespace GBEmu {
 		pr->setflag(Z80::opf);
 		pr->a = ~proc_add(pr, pr->a, (byte)(~inp + 1)) + 1;
 		if (inp > pr->a) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf); \
-			zfset(pr->a); return 8;
+			pr->zfset(pr->a); return 8;
 	}
 
 #define and(src) OP(AND_##src) {\
 		pr->a &= pr->##src;\
-		zfset(pr->a)\
+		pr->zfset(pr->a);\
 		pr->setflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);\
 	return 4; }
 
 	forallregs(and)
 
-		OP(AND_HL) {
+	OP(AND_HL) {
 		pr->a &= pr->getvaluepointedbyHL();
-		zfset(pr->a)
+		pr->zfset(pr->a);
 		pr->setflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
 		return 8;
 	}
 
 	OP(AND_n) {
 		pr->a &= pr->fetchb();
-		zfset(pr->a)
+		pr->zfset(pr->a);
 		pr->setflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
 		return 8;
 	}
 
 #define or(src) OP(OR_##src) {\
 		pr->a |= pr->##src;\
-		zfset(pr->a)\
+		pr->zfset(pr->a);\
 		pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);\
 		return 4;	}
 
@@ -265,14 +273,14 @@ namespace GBEmu {
 
 	OP(OR_HL) {
 		pr->a |= pr->getvaluepointedbyHL();
-		zfset(pr->a)
+		pr->zfset(pr->a);
 		pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
 		return 8;
 	}
 
 	OP(OR_n) {
 		pr->a |= pr->fetchb();
-		zfset(pr->a);
+		pr->zfset(pr->a);
 		pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
 		return 8;
 	}
@@ -280,22 +288,22 @@ namespace GBEmu {
 
 #define xor(src) OP(XOR_##src) {\
 		pr->a ^= pr->##src;\
-		zfset(pr->a)\
+		pr->zfset(pr->a);\
 		pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);\
 		return 4;	}
 
 	forallregs(xor)
 
-		OP(XOR_HL) {
+	OP(XOR_HL) {
 		pr->a ^= pr->getvaluepointedbyHL();
-		zfset(pr->a)
+		pr->zfset(pr->a);
 		pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
 		return 8;
 	}
 
 	OP(XOR_n) {
 		pr->a ^= pr->fetchb();
-		zfset(pr->a)
+		pr->zfset(pr->a);
 		pr->resetflag(Z80::hcf); pr->resetflag(Z80::opf); pr->resetflag(Z80::cf);
 		return 8;
 	}
@@ -304,7 +312,7 @@ namespace GBEmu {
 	// Same with SUB n.
 #define cp(src) OP(CP_##src) {\
 			word tmp = (~proc_add(pr, pr->a, (byte)(~pr->##src+1))+1) & 0xFF;\
-			zfset(tmp)\
+			pr->zfset(tmp);\
 			if (pr->##src > pr->a) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);\
 			return 4;	}
 
@@ -312,7 +320,7 @@ namespace GBEmu {
 
 	OP(CP_HL) {
 		word tmp = (~proc_add(pr, pr->a, (byte)(~pr->getvaluepointedbyHL() + 1)) + 1) & 0xFF;
-		zfset(tmp)
+		pr->zfset(tmp);
 		if (pr->getvaluepointedbyHL() > pr->a) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);
 		return 8;
 	}
@@ -320,7 +328,7 @@ namespace GBEmu {
 	OP(CP_n) {
 		byte inp = pr->fetchb();
 		word tmp = (~proc_add(pr, pr->a, (byte)(~inp + 1)) + 1) & 0xFF;
-		zfset(tmp)
+		pr->zfset(tmp);
 		if (inp > pr->a) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);
 		return 8;
 	}
@@ -328,7 +336,7 @@ namespace GBEmu {
 #define inc(src) OP(INC_##src) {\
 			byte carry = pr->isflagset(Z80::cf);\
 			pr->##src = proc_add(pr, 1, pr->##src);\
-			zfset(pr->##src)\
+			pr->zfset(pr->##src);\
 			pr->resetflag(Z80::opf);\
 			if (carry) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);\
 			return 4;	}
@@ -337,7 +345,7 @@ namespace GBEmu {
 
 	OP(INC_PHL) {
 		pr->setHL(pr->getvaluepointedbyHL() + 1);
-		zfset(pr->getHL());
+		pr->zfset(pr->getHL());
 		pr->resetflag(Z80::opf);
 		return 12;
 	}
@@ -345,7 +353,7 @@ namespace GBEmu {
 #define dec(src) OP(DEC_##src) {\
 			byte carry = pr->isflagset(Z80::cf);\
 			pr->##src = proc_add(pr, (byte)~1+1, pr->##src);\
-			zfset(pr->##src)\
+			pr->zfset(pr->##src);\
 			pr->resetflag(Z80::opf);\
 			if (carry) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);\
 			return 4;		}
@@ -354,7 +362,7 @@ namespace GBEmu {
 
 	OP(DEC_PHL) {
 		pr->setHL(pr->getHL() - 1);
-		zfset(pr->getHL());
+		pr->zfset(pr->getHL());
 		pr->resetflag(Z80::opf);
 		return 12;
 	}
@@ -398,13 +406,13 @@ namespace GBEmu {
 	forall16bitregs(dec16);
 
 #define push16(src) OP(PUSH_##src) { \
-		pr->mmu.writew(pr->sp, pr->get##src()); pr->sp -= 2; return 16;\
+		pr->sp -= 2; pr->mmu.writew(pr->sp, pr->get##src()); return 16;\
 				}
 
 	forall16bitregs(push16)
 
 #define pop16(dst) OP(POP_##dst) { \
-		pr->set##dst (pr->mmu.readw(pr->sp+2)); pr->sp += 2; return 12;\
+		pr->set##dst (pr->mmu.readw(pr->sp)); pr->sp += 2; return 12;\
 			}
 
 		forall16bitregs(pop16)
@@ -504,13 +512,13 @@ namespace GBEmu {
 	OP(opTableB) {
 		byte opc2 = pr->fetchb();
 		word op = 0xCB00 | opc2;
-		pr->runopcode(op); return 0;
+		return pr->runopcode(op);
 	}
 
 	OP(CALL) {
 		word jmpaddr = pr->fetchw();
-		word pushaddr = pr->pc;
-		pr->mmu.writew(pr->sp, pushaddr); pr->sp -= 2;
+		word pushaddr = pr->pc; // call + return address
+		pr->sp -= 2; pr->mmu.writew(pr->sp, pushaddr);
 		pr->pc = jmpaddr; // holy cow, subroutines
 		return 12;
 	}
@@ -577,7 +585,7 @@ namespace GBEmu {
 	}
 
 	OP(RET) {
-		word jmpaddr = pr->mmu.readw(pr->sp + 2);
+		word jmpaddr = pr->mmu.readw(pr->sp);
 		pr->sp += 2;
 		pr->pc = jmpaddr; // WOW we're BACK to the previous routine. So cool!
 		return 8;
@@ -677,7 +685,7 @@ namespace GBEmu {
 		v <<= 1;
 		v |= newcarry;
 		if (newcarry) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);
-		zfset(v);
+		pr->zfset(v);
 		pr->resetflag(Z80::hcf);
 	}
 
@@ -689,7 +697,7 @@ namespace GBEmu {
 		v <<= 1;
 		v |= carry;
 		if (newcarry) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);
-		zfset(v);
+		pr->zfset(v);
 		pr->resetflag(Z80::hcf);
 	}
 
@@ -700,7 +708,7 @@ namespace GBEmu {
 		v >>= 1;
 		v |= carry;
 		if (carry) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);
-		zfset(v);
+		pr->zfset(v);
 		pr->resetflag(Z80::hcf);
 	}
 
@@ -712,7 +720,7 @@ namespace GBEmu {
 		v >>= 1;
 		v |= carry;
 		if (newcarry) pr->setflag(Z80::cf); else pr->resetflag(Z80::cf);
-		zfset(v);
+		pr->zfset(v);
 		pr->resetflag(Z80::hcf);
 	}
 
@@ -764,7 +772,7 @@ OP(ILLOP) {
 	Similarily, the carry is set to the nth bit of the shifted n bits.
 */
 
-void _zBIT(byte v, byte bit, Z80* pr)
+void testBit(byte v, byte bit, Z80* pr)
 {
 	byte isbitset = v & (1 << bit);
 	if (!isbitset) pr->setflag(Z80::zf); // set zf if 0
@@ -773,47 +781,32 @@ void _zBIT(byte v, byte bit, Z80* pr)
 	pr->setflag(Z80::hcf);
 }
 
-#define bitop(n,dst) OP(BIT_ ##n ##_ ##dst) {_zBIT(pr->##dst, n, pr); return 8;}
+#define bitop(n,dst) OP(BIT_ ##n ##_ ##dst) {testBit(pr->##dst, n, pr); return 8;}
 #define bop(dst) bitop(0,dst) bitop(1,dst) bitop(2,dst) bitop(3,dst) bitop(4,dst) bitop(5,dst) bitop(6,dst) bitop(7,dst)
 forallregs(bop)
 
-OP(BIT_0_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 0, pr); return 16;
+template<int N>
+OP(BIT_N_HL) {
+	testBit(pr->getvaluepointedbyHL(), N, pr); return 16;
 }
 
-OP(BIT_1_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 1, pr); return 16;
-}
+OP(DAA) {
+	auto bcd = pr->A;
+	unsigned char b1 = bcd >> 4; // high nibble
+	unsigned char b2 = bcd & 0xF; // low nibble
 
-OP(BIT_2_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 2, pr); return 16;
-}
+	unsigned char adjustedHigh = (b1 + b2 / 10) % 10;
+	unsigned char adjustedLow = b2 % 10;
 
-OP(BIT_3_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 3, pr); return 16;
-}
-
-OP(BIT_4_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 4, pr); return 16;
-}
-
-OP(BIT_5_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 5, pr); return 16;
-}
-
-OP(BIT_6_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 6, pr); return 16;
-}
-
-OP(BIT_7_HL) {
-	_zBIT(pr->getvaluepointedbyHL(), 7, pr); return 16;
+	pr->A = (adjustedHigh << 4) | adjustedLow;
+	return 4;
 }
 
 Z80::z80op ops[256] =
 {
 	// 0x00
 	{ NOP, "nop" },
-	{ LD_BC_nn, "LD BC, nn" },
+	{ LD_BC_nn, "LD BC, w" },
 	{ LD_BC_A, "LD (BC), A" },
 	{ INC_BC, "INC BC" },
 	{ INC_B, "INC B" },
@@ -831,7 +824,7 @@ Z80::z80op ops[256] =
 
 	// 0x10
 	{ STOP, "STOP" },
-	{ LD_DE_nn, "LD DE, nn" },
+	{ LD_DE_nn, "LD DE, w" },
 	{ LD_DE_A, "LD (DE), A" },
 	{ INC_DE, "INC DE" },
 	{ INC_D, "INC D" },
@@ -848,15 +841,15 @@ Z80::z80op ops[256] =
 	{ RRA, "RRA" },
 
 	// 0x20
-	{ JRNZ, "JR NZ" },
-	{ LD_HL_nn, "LD HL, nn" },
+	{ JRNZ, "JR NZ n" },
+	{ LD_HL_nn, "LD HL, w" },
 	{ LDI_HL_A, "LDI (HL), A" },
 	{ INC_HL, "INC HL" },
 	{ INC_H, "INC H" },
 	{ DEC_H, "DEC H" },
 	{ LD_H_n, "LD H, n" },
-	{ ILLOP, "nop" },
-	{ JRZ, "JR Z" },
+	{ DAA, "DAA" },
+	{ JRZ, "JR Z n" },
 	{ ADD_HL_HL, "ADD HL, HL" },
 	{ LDI_A_HL, "LDI A, (HL)" },
 	{ DEC_HL, "DEC_HL" },
@@ -867,18 +860,18 @@ Z80::z80op ops[256] =
 
 	// 0x30
 	{ JRNC, "JRNC" },
-	{ LD_SP_nn, "LD SP, nn" },
+	{ LD_SP_nn, "LD SP, w" },
 	{ LDD_HL_A, "LDD (HL), A" },
 	{ INC_SP, "INC SP" },
 	{ INC_PHL, "INC (HL)" },
 	{ DEC_PHL, "DEC (HL)" },
 	{ LD_HL_n, "LD (HL), n" },
-	{ ILLOP, "nop" },
+	{ SCF, "SCF" },
 	{ JRC, "JRC" },
 	{ ADD_HL_HL, "ADD HL, HL" },
 	{ LDD_A_HL, "LDD A, (HL)" },
 	{ DEC_SP, "DEC SP" },
-	{ ILLOP, "nop" },
+	{ INC_A, "INC A" },
 	{ DEC_A, "DEC A" },
 	{ LD_A_n, "LD A, n" },
 	{ CCF, "CCF" },
@@ -953,7 +946,7 @@ Z80::z80op ops[256] =
 	{ LD_A_H, "LD A, H" },
 	{ LD_A_L, "LD A, L" },
 	{ LD_A_HL, "LD A, (HL)" },
-	{ ILLOP, "LD A, A" },
+	{ LD_A_A, "LD A, A" },
 
 	//0x80
 	{ ADD_A_B, "ADD A, B" },
@@ -982,7 +975,7 @@ Z80::z80op ops[256] =
 	{ SUB_L, "SUB L" },
 	{ SUB_HL, "SUB (HL)" },
 	{ SUB_A, "SUB A" },
-	{ ILLOP, "nop" },
+	{ ILLOP, "nop" }, // SBC stuff
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
@@ -999,7 +992,7 @@ Z80::z80op ops[256] =
 	{ AND_H, "AND H" },
 	{ AND_L, "AND L" },
 	{ AND_HL, "AND (HL)" },
-	{ ILLOP, "nop" },
+	{ AND_A, "AND A" },
 	{ XOR_B, "XOR B" },
 	{ XOR_C, "XOR C" },
 	{ XOR_D, "XOR D" },
@@ -1017,7 +1010,7 @@ Z80::z80op ops[256] =
 	{ OR_H, "OR H" },
 	{ OR_L, "OR L" },
 	{ OR_HL, "OR (HL)" },
-	{ ILLOP, "nop" },
+	{ OR_A, "OR A" },
 	{ CP_B, "CP B" },
 	{ CP_C, "CP C" },
 	{ CP_D, "CP D" },
@@ -1032,17 +1025,17 @@ Z80::z80op ops[256] =
 	{ POP_BC, "POP BC" },
 	{ JPNZ, "JP NZ" },
 	{ JP, "JP" },
-	{ CALLNZ, "CALL NZ" },
+	{ CALLNZ, "CALL NZ w" },
 	{ PUSH_BC, "PUSH BC" },
-	{ ILLOP, "nop" },
+	{ ADD_A_n, "ADD A, n" },
 	{ RST00, "RST 00" },
 	{ RETZ, "RET Z" },
 	{ RET, "RET" },
 	{ JPZ, "JP Z" },
 	{ opTableB, "ec" },
-	{ CALLZ, "CALL Z" },
-	{ CALL, "CALL" },
-	{ ADD_A_n, "ADD A, n" },
+	{ CALLZ, "CALLZ w" },
+	{ CALL, "CALL w" },
+	{ ADC_A_n, "ADC A, n" }, // ADC :S
 	{ RST08, "RST 08" },
 
 	//0xD0
@@ -1060,13 +1053,13 @@ Z80::z80op ops[256] =
 	{ ILLOP, "nop" },
 	{ CALLC, "CALL C" },
 	{ ILLOP, "nop" },
-	{ ILLOP, "nop" },
+	{ ILLOP, "nop" }, // SBC A, d8
 	{ RST18, "RST 18" },
 
 	//0xE0
 	{ LD_Pn_A, "LD ($FF00+n), A" },
 	{ POP_HL, "POP HL" },
-	{ LD_PC_A, "LD (C), A" },
+	{ LD_PC_A, "LD (FF00+C), A" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ PUSH_HL, "PUSH HL" },
@@ -1074,7 +1067,7 @@ Z80::z80op ops[256] =
 	{ RST20, "RST 20" },
 	{ ADD_SP_n, "ADD SP, n" },
 	{ ILLOP, "nop" },
-	{ LD_nn_A, "LD (nn), A" },
+	{ LD_nn_A, "LD (w), A" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
@@ -1092,7 +1085,7 @@ Z80::z80op ops[256] =
 	{ RST30, "RST 30" },
 	{ LD_HL_SPn, "LD HL, SP+n" },
 	{ LD_SP_HL, "LD SP, HL" },
-	{ LD_A_nn, "LD A, (nn)" },
+	{ LD_A_nn, "LD A, (w)" },
 	{ EI, "EI" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
@@ -1139,6 +1132,7 @@ Z80::z80op optable2[256] =
 	{ xRRA, "RR A" },
 
 	// 20
+	{ ILLOP, "nop" }, // RL
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
@@ -1146,8 +1140,7 @@ Z80::z80op optable2[256] =
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
-	{ ILLOP, "nop" },
-	{ ILLOP, "nop" },
+	{ ILLOP, "nop" }, // RR
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
@@ -1157,15 +1150,15 @@ Z80::z80op optable2[256] =
 	{ ILLOP, "nop" },
 
 	// 30
+	{ SWAP<&Z80::b>, "SWAP B" }, // SLA
+	{ SWAP<&Z80::c>, "SWAP C" },
+	{ SWAP<&Z80::e>, "SWAP D" },
+	{ SWAP<&Z80::e>, "SWAP E" },
+	{ SWAP<&Z80::h>, "SWAP H" },
+	{ SWAP<&Z80::l>, "SWAP L" },
 	{ ILLOP, "nop" },
-	{ ILLOP, "nop" },
-	{ ILLOP, "nop" },
-	{ ILLOP, "nop" },
-	{ ILLOP, "nop" },
-	{ ILLOP, "nop" },
-	{ ILLOP, "nop" },
-	{ ILLOP, "nop" },
-	{ ILLOP, "nop" },
+	{ SWAP<&Z80::a>, "SWAP A" },
+	{ ILLOP, "nop" }, // SRB
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
@@ -1181,7 +1174,7 @@ Z80::z80op optable2[256] =
 	{ BIT_0_E, "BIT 0,E" },
 	{ BIT_0_H, "BIT 0,H" },
 	{ BIT_0_L, "BIT 0,L" },
-	{ BIT_0_HL, "BIT 0,(HL)" },
+	{ BIT_N_HL<0>, "BIT 0,(HL)" },
 	{ BIT_0_A, "BIT 0,A" },
 	{ BIT_1_B, "BIT 1,B" },
 	{ BIT_1_C, "BIT 1,C" },
@@ -1189,7 +1182,7 @@ Z80::z80op optable2[256] =
 	{ BIT_1_E, "BIT 1,E" },
 	{ BIT_1_H, "BIT 1,H" },
 	{ BIT_1_L, "BIT 1,L" },
-	{ BIT_1_HL, "BIT 1,(HL)" },
+	{ BIT_N_HL<1>, "BIT 1,(HL)" },
 	{ BIT_1_A, "BIT 1,A" },
 
 
@@ -1200,7 +1193,7 @@ Z80::z80op optable2[256] =
 	{ BIT_2_E, "BIT 2,E" },
 	{ BIT_2_H, "BIT 2,H" },
 	{ BIT_2_L, "BIT 2,L" },
-	{ BIT_2_HL, "BIT 2,(HL)" },
+	{ BIT_N_HL<2>, "BIT 2,(HL)" },
 	{ BIT_2_A, "BIT 2,A" },
 	{ BIT_3_B, "BIT 3,B" },
 	{ BIT_3_C, "BIT 3,C" },
@@ -1208,7 +1201,7 @@ Z80::z80op optable2[256] =
 	{ BIT_3_E, "BIT 3,E" },
 	{ BIT_3_H, "BIT 3,H" },
 	{ BIT_3_L, "BIT 3,L" },
-	{ BIT_3_HL, "BIT 3,(HL)" },
+	{ BIT_N_HL<3>, "BIT 3,(HL)" },
 	{ BIT_3_A, "BIT 3,A" },
 
 	// 60
@@ -1218,7 +1211,7 @@ Z80::z80op optable2[256] =
 	{ BIT_4_E, "BIT 4,E" },
 	{ BIT_4_H, "BIT 4,H" },
 	{ BIT_4_L, "BIT 4,L" },
-	{ BIT_4_HL, "BIT 4,(HL)" },
+	{ BIT_N_HL<4>, "BIT 4,(HL)" },
 	{ BIT_4_A, "BIT 4,A" },
 	{ BIT_5_B, "BIT 5,B" },
 	{ BIT_5_C, "BIT 5,C" },
@@ -1226,7 +1219,7 @@ Z80::z80op optable2[256] =
 	{ BIT_5_E, "BIT 5,E" },
 	{ BIT_5_H, "BIT 5,H" },
 	{ BIT_5_L, "BIT 5,L" },
-	{ BIT_5_HL, "BIT 5,(HL)" },
+	{ BIT_N_HL<5>, "BIT 5,(HL)" },
 	{ BIT_5_A, "BIT 5,A" },
 
 	// 70
@@ -1236,7 +1229,7 @@ Z80::z80op optable2[256] =
 	{ BIT_6_E, "BIT 6,E" },
 	{ BIT_6_H, "BIT 6,H" },
 	{ BIT_6_L, "BIT 6,L" },
-	{ BIT_6_HL, "BIT 6,(HL)" },
+	{ BIT_N_HL<6>, "BIT 6,(HL)" },
 	{ BIT_6_A, "BIT 6,A" },
 	{ BIT_7_B, "BIT 7,B" },
 	{ BIT_7_C, "BIT 7,C" },
@@ -1244,11 +1237,11 @@ Z80::z80op optable2[256] =
 	{ BIT_7_E, "BIT 7,E" },
 	{ BIT_7_H, "BIT 7,H" },
 	{ BIT_7_L, "BIT 7,L" },
-	{ BIT_7_HL, "BIT 7,(HL)" },
+	{ BIT_N_HL<7>, "BIT 7,(HL)" },
 	{ BIT_7_A, "BIT 7,A" },
 
 	// 80
-	{ ILLOP, "nop" },
+	{ ILLOP, "nop" }, // RES
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
@@ -1266,7 +1259,7 @@ Z80::z80op optable2[256] =
 	{ ILLOP, "nop" },
 
 	// 90
-	{ ILLOP, "nop" },
+	{ ILLOP, "nop" }, // RES
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
@@ -1284,7 +1277,7 @@ Z80::z80op optable2[256] =
 	{ ILLOP, "nop" },
 
 	// A0
-	{ ILLOP, "nop" },
+	{ ILLOP, "nop" }, // RES
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
@@ -1302,7 +1295,7 @@ Z80::z80op optable2[256] =
 	{ ILLOP, "nop" },
 
 	// B0
-	{ ILLOP, "nop" },
+	{ ILLOP, "nop" }, // RES
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
@@ -1320,7 +1313,7 @@ Z80::z80op optable2[256] =
 	{ ILLOP, "nop" },
 
 	// C0
-	{ ILLOP, "nop" },
+	{ ILLOP, "nop" }, // SET
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
@@ -1338,7 +1331,7 @@ Z80::z80op optable2[256] =
 	{ ILLOP, "nop" },
 
 	// D0
-	{ ILLOP, "nop" },
+	{ ILLOP, "nop" }, // SET
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
@@ -1356,7 +1349,7 @@ Z80::z80op optable2[256] =
 	{ ILLOP, "nop" },
 
 	// E0
-	{ ILLOP, "nop" },
+	{ ILLOP, "nop" }, // SET
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
@@ -1374,7 +1367,7 @@ Z80::z80op optable2[256] =
 	{ ILLOP, "nop" },
 
 	// F0
-	{ ILLOP, "nop" },
+	{ ILLOP, "nop" }, // SET
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
 	{ ILLOP, "nop" },
